@@ -21,6 +21,24 @@ Therefore we try here to keep the code alive for many kernel versions as
 possible and ship it as DKMS packages for Debian/Ubuntu, RHEL-family
 distros (EL8, EL9, Fedora), openSUSE Leap 15 / SLES 15 and Arch.
 
+### CI Status
+
+The `vagrant-*` jobs run the full pipeline (rpmbuild → `rpm -Uvh` → DKMS
+build/install → verify → modprobe smoke test) in real libvirt VMs; the
+`pkg-*` jobs build the binary packages; the container jobs compile the
+module against each distro's kernel-devel.
+
+| Target | Status |
+| :--- | :---: |
+| **AlmaLinux 8** (kernel 4.18) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-el8&style=flat-square&logo=redhat&logoColor=white&label=vagrant"/> <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_rpm_almalinux%3A8&style=flat-square&logo=redhat&logoColor=white&label=container"/> |
+| **AlmaLinux 9** (kernel 5.14) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-el9&style=flat-square&logo=redhat&logoColor=white&label=vagrant"/> <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_rpm_almalinux%3A9&style=flat-square&logo=redhat&logoColor=white&label=container"/> |
+| **openSUSE Leap 15.6** (kernel 6.4) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-opensuse15&style=flat-square&logo=opensuse&logoColor=white&label=vagrant"/> <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_rpm_opensuse%2Fleap%3A15.6&style=flat-square&logo=opensuse&logoColor=white&label=container"/> |
+| **Ubuntu 22.04** (kernel 5.15) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-22.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
+| **Ubuntu 24.04** (kernel 6.8) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-24.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
+| **Debian** (.deb package) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-debian&style=flat-square&logo=debian&logoColor=white&label=package"/> |
+| **Arch** (.pkg.tar.zst) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-arch&style=flat-square&logo=archlinux&logoColor=white&label=package"/> |
+| **Release** (tag → GitHub release) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=github-release&style=flat-square&logo=github&logoColor=white&label=release"/> |
+
 Kernel compatibility notes
 ==========================
 The `src/` directory contains AMD's RAIDXpert2 9.3.2 driver source with
