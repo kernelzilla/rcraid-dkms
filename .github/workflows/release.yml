@@ -22,19 +22,24 @@ jobs:
   # -------------------------------------------------------------------
   vagrant-matrix:
     name: vagrant-${{ matrix.distro }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         distro: [el8, el9, opensuse15]
     env:
-      VAGRANT_LIBVIRT_NETWORK: default
+      VAGRANT_LIBVIRT_NETWORK: vagrantnet
     steps:
       - uses: actions/checkout@v4
 
       - name: Install libvirt, KVM and Vagrant
         run: |
+          # Self-hosted runner: only install what is missing. Requires
+          # passwordless sudo (or pre-installed deps) on the runner host.
+          if command -v vagrant >/dev/null && command -v virsh >/dev/null; then
+            exit 0
+          fi
           sudo apt-get update
           sudo apt-get install -y qemu-kvm libvirt-daemon-system \
             libvirt-clients libvirt-dev libxslt-dev libxml2-dev \
@@ -44,15 +49,23 @@ jobs:
           sudo dpkg -i /tmp/vagrant.deb || sudo apt-get -f install -y
           sudo usermod -aG libvirt,kvm $USER
 
-      - name: Enable KVM and the libvirt default network
+      - name: Ensure KVM and the vagrantnet libvirt network
         run: |
           sudo modprobe kvm-intel 2>/dev/null || sudo modprobe kvm-amd 2>/dev/null || true
           sudo chmod 666 /dev/kvm 2>/dev/null || true
-          sudo systemctl start libvirtd
-          sudo virsh net-start default 2>/dev/null || true
+          sudo systemctl start libvirtd 2>/dev/null || true
+          # vagrantnet is a DHCP-only network (DNS disabled) so it does
+          # not collide with a resolver bound to host port 53.
+          virsh -c qemu:///system net-info vagrantnet >/dev/null 2>&1 || {
+            virsh -c qemu:///system net-define vagrant/vagrantnet.xml
+            virsh -c qemu:///system net-start vagrantnet
+            virsh -c qemu:///system net-autostart vagrantnet
+          }
 
       - name: Install vagrant plugins
-        run: vagrant plugin install vagrant-libvirt vagrant-reload
+        run: |
+          vagrant plugin list | grep -q vagrant-libvirt || vagrant plugin install vagrant-libvirt
+          vagrant plugin list | grep -q vagrant-reload  || vagrant plugin install vagrant-reload
 
       - name: Build and test in rcraid-${{ matrix.distro }}
         run: sg libvirt -c "vagrant up rcraid-${{ matrix.distro }} --provider=libvirt" || true
@@ -78,7 +91,7 @@ jobs:
   # -------------------------------------------------------------------
   deb:
     name: pkg-debian
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     container: debian:bookworm
     steps:
       - uses: actions/checkout@v4
@@ -99,7 +112,7 @@ jobs:
   # -------------------------------------------------------------------
   arch:
     name: pkg-arch
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     container: archlinux:base-devel
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +139,7 @@ jobs:
     name: github-release
     if: startsWith(github.ref, 'refs/tags/')
     needs: [vagrant-matrix, deb, arch]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
         with:
