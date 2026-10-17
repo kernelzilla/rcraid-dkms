@@ -163,9 +163,17 @@ provider):
 | `rcraid-el9`       | `almalinux/9`             | 5.14 (EL9)    |
 | `rcraid-opensuse15`| `opensuse/Leap-15.6.x86_64` | 6.4 (SUSE)  |
 
-Requirements: vagrant + `vagrant-libvirt` + `vagrant-reload` plugins, and
-a libvirt NAT network (see `vagrant/vagrantnet.xml` — a DNS-less variant
-that works even when a resolver already owns host port 53).
+Host requirements: KVM (`/dev/kvm`), libvirt + virsh, Vagrant (>= 2.4)
+and the `vagrant-libvirt` and `vagrant-reload` plugins, plus membership
+in the `libvirt` and `kvm` groups. The VMs use a DHCP-only libvirt NAT
+network (`vagrantnet`, defined by `vagrant/vagrantnet.xml`) whose DNS is
+disabled so it does not collide with a resolver already bound to host
+port 53; set `VAGRANT_LIBVIRT_NETWORK=default` to use libvirt's stock
+NAT network on hosts without that conflict.
+
+`./setup-vagrant.sh` installs all of the above on any supported host
+distro (Debian/Ubuntu, RHEL-family, openSUSE/SLES 15, Arch) — or install
+manually:
 
 ```bash
 virsh -c qemu:///system net-define vagrant/vagrantnet.xml
