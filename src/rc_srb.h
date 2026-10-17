@@ -2,6 +2,7 @@
  *
  * Copyright © 2006-2008 Ciprico Inc. All rights reserved.
  * Copyright © 2008-2013 Dot Hill Systems Corp. All rights reserved.
+ * Copyright © 2021-2023, Advanced Micro Devices, Inc. All rights reserved.
  *
  * Use of this software is subject to the terms and conditions of the written
  * software license agreement between you and DHS (the "License"),
@@ -145,7 +146,7 @@ typedef struct rc_sg_list_s {
 	rc_uint16_t    sg_mem_type;    /* Memory ID to pass to routines */
 	rc_uint16_t    reserved;
 	rc_uint32_t    sg_num_elem;
-	rc_sg_elem_t   sg_elem[1];    /* variable size array */
+	rc_sg_elem_t   sg_elem[RC_SG_MAX_ELEMENTS];    /* maybe variable size array, btw i only know its overflow while run scsi_for_each_sg  */
 } rc_sg_list_t;
 
 typedef struct rc_srb_s {

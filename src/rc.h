@@ -3,6 +3,7 @@
  * Copyright © 2006-2008 Ciprico Inc. All rights reserved.
  * Copyright © 2008-2014 Dot Hill Systems Corp. All rights reserved.
  * Copyright © 2015-2016 Seagate Technology LLC. All rights reserved.
+ * Copyright © 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Use of this software is subject to the terms and conditions of the written
  * software license agreement between you and DHS (the "License"),
@@ -19,15 +20,12 @@
  *
  ****************************************************************************/
 
-#ifndef _BC_OSHEADERS_H_
+#ifndef _RC_OSHEADERS_H_
 #define _RC_OSHEADERS_H_
 
 #include <linux/version.h>
 
 #include <linux/module.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
-#include <linux/config.h>
-#endif
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/types.h>
@@ -65,37 +63,13 @@ typedef struct scsi_host_template Scsi_Host_Template;
 #define GET_IO_REQUEST_LOCK_IRQSAVE(i)
 #define PUT_IO_REQUEST_LOCK_IRQRESTORE(i)
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
-#define sg_next(__sg)        ((__sg)+1) // pointer arithmetic
-#define sg_phys(__sg)        (page_to_phys(sg_page((__sg))) + (__sg)->offset)
-#endif
-
-// some distro's backported these defines to previous kernel versions so
-// checking for defined as well helps avoid compiler warnings
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)
-#ifndef scsi_sg_count
-#define scsi_sg_count(__scp) ((__scp)->use_sg)
-#endif
-#ifndef scsi_bufflen
-#define scsi_bufflen(__scp)  ((__scp)->request_bufflen)
-#endif
-#ifndef scsi_sglist
-#define scsi_sglist(__scp)   ((struct scatterlist *)(__scp)->request_buffer)
-#endif
-#ifndef scsi_for_each_sg
-#define scsi_for_each_sg(__s, __g, __n, __i)		\
-	for ((__i) = 0, (__g) = (scsi_sglist(__s));	\
-	     (__i) < (__n);				\
-	     (__i)++, (__g) = sg_next((__g)))
-#endif
-#endif
-
 
 #include "rc_types_platform.h"
 #include "rc_srb.h"
 #include "rc_scsi.h"
 #include "rc_msg_platform.h"
 #include "rc_adapter.h"
+#include "rc_compat.h"
 
 typedef enum
 {
@@ -137,10 +111,6 @@ void rc_event_shutdown(void);
 extern rc_softstate_t       rc_state;
 extern rc_adapter_t       *rc_dev[];
 extern int            rc_msg_level;
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
-#define sg_page(x) (x)->page
-#endif
 
 typedef struct _rc_work {
     struct _rc_work         *next;
@@ -184,7 +154,7 @@ typedef struct rc_event_thread_s {
         int                 num_srb;
         rc_srb_queue_t      cfg_change_detect;
         rc_srb_queue_t      cfg_change_response;
-        rc_uint32_t         targets[MAX_ARRAY];
+        rc_uint32_t         targets[RC_MAX_SCSI_TARGETS];
 } rc_event_thread_t;
 
 extern rc_event_thread_t rc_event_thread;
@@ -222,4 +192,31 @@ extern rc_thread_t rc_thread[];
 #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)ACPI_HANDLE(dev))
 #endif
 
+//
+// UEFI NVRAM Access
+//
+
+#include <linux/efi.h>
+
+#define NVME_TRAP_DEVICE_VAR_GUID       \
+        EFI_GUID(0x4b2865c3, 0x8722, 0x45db, 0xaa, 0x7b, 0xf9, 0xe1, 0xc1, 0xb1, 0x8d, 0x34)
+
+typedef struct {
+        uint16_t        VendorId;
+        uint16_t        DeviceId;
+        uint8_t         Bus;
+        uint8_t         Device;
+        uint8_t         Function;
+        uint8_t         _rsv0;
+} NVME_TRAP_DEVICE;
+
+extern NVME_TRAP_DEVICE NvmeTrapDeviceVar[];
+
+#define check_lock(sp) {						\
+		if (sp->osic_locked) {					\
+			rc_printk(RC_WARN, "%s: osic already locked by %s\n", __FUNCTION__, \
+				  sp->osic_lock_holder);		\
+			panic("osic_lock already held\n");		\
+		}							\
+	}
 #endif // _RC_OSHEADERS_H_

@@ -1,0 +1,19 @@
+<!-- NAT network for the rcraid-dkms test VMs.
+     With <dns enable='no'/> libvirt runs dnsmasq with port=0: DHCP is
+     still served, but no DNS listener is opened, so this network works
+     even when a resolver (unbound, named, ...) already owns port 53 on
+     the host. DNS for guests is instead handed out via dhcp-option 6. -->
+<network xmlns:dnsmasq='http://libvirt.org/schemas/network/dnsmasq/1.0'>
+  <name>vagrantnet</name>
+  <forward mode='nat'/>
+  <bridge name='virbr10' stp='on' delay='0'/>
+  <dns enable='no'/>
+  <ip address='192.168.150.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.150.10' end='192.168.150.200'/>
+    </dhcp>
+  </ip>
+  <dnsmasq:options>
+    <dnsmasq:option value='dhcp-option=6,192.168.1.184,1.1.1.1,8.8.8.8'/>
+  </dnsmasq:options>
+</network>

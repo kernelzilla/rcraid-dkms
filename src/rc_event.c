@@ -3,6 +3,7 @@
  * Copyright © 2006-2008 Ciprico Inc. All rights reserved.
  * Copyright © 2008-2014 Dot Hill Systems Corp. All rights reserved.
  * Copyright © 2051-2016 Seagate Technology LLC. All rights reserved.
+ * Copyright © 2021-2023, Advanced Micro Devices, Inc. All rights reserved.
  *
  * Use of this software is subject to the terms and conditions of the written
  * software license agreement between you and DHS (the "License"),
@@ -38,7 +39,9 @@ static int rc_event_kthread(void *arg);
 extern int rc_srb_seq_num;
 
 rc_event_thread_t rc_event_thread;
-
+#if 0
+static int rc_scsi_delay = 200;
+#endif
 int
 rc_event_init(void)
 {
@@ -187,7 +190,7 @@ rc_cfg_change_detect(rc_uint32_t type, rc_uint32_t bus, int update_mode)
 
 	rc_printk(RC_DEBUG,"rc_cfg_change_detect type 0x%x bus %d\n", type, bus);
 
-	for (i = 0; i <= RC_MAX_SCSI_TARGETS; i++) {
+	for (i = 0; i < RC_MAX_SCSI_TARGETS; i++) {
 		rc_send_inq(bus, i, 0, update_mode);
 	}
 }
@@ -210,7 +213,7 @@ rc_send_inq(rc_uint32_t bus, rc_uint32_t target, rc_uint32_t lun,
 
 	state = &rc_state;
 
-	if (bus > 0  || target > RC_MAX_SCSI_TARGETS || lun > 0) {
+	if (bus > 0  || target >= RC_MAX_SCSI_TARGETS || lun > 0) {
 		rc_printk(RC_INFO2, "rc_send_inq: invalid B/T/L %d/%d/%d\n",
 			  bus, target, lun );
 		return;
@@ -445,6 +448,7 @@ rc_cfg_change_response(struct rc_srb_s *srb)
 	case RC_SRB_STATUS_DEVICE_LOCKED:
 		msg = "no device, but locked by OS";
 		locked = 1;
+		break;
 
 	default:
 		break;
@@ -494,10 +498,18 @@ rc_notify_scsi_layer(int channel, int target, int lun, int present)
 		return error;
 
 	if (present) {
+#if 0
+        if (rc_scsi_delay)
+            mdelay(rc_scsi_delay);
+#endif
 		error = scsi_add_device(shost, channel, target, lun);
 	} else {
 		sdev = scsi_device_lookup(shost, channel, target, lun);
 		if (sdev) {
+#if 0
+            if (rc_scsi_delay)
+                mdelay(rc_scsi_delay);
+#endif
 			scsi_remove_device(sdev);
 			scsi_device_put(sdev);
 			error = 0;

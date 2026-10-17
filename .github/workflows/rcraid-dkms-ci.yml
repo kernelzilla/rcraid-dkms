@@ -13,8 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-18.04
-          - ubuntu-20.04
+          - ubuntu-22.04
+          - ubuntu-24.04
     runs-on: ${{ matrix.os }}
     name: ${{ github.event.repository.name }}_${{ matrix.os }}
     steps:
@@ -39,4 +39,27 @@ jobs:
           ls -1 /lib/modules/
           echo
           export KVERS="$(ls -1 /lib/modules/ | tail -n1)"
-          make
+          make dkms
+
+  # Build the RPM and compile the module through DKMS inside containers
+  # of each target distro (EL8, EL9, openSUSE Leap 15.6). A container has
+  # no "running kernel", so the module is built against the installed
+  # kernel-devel via `dkms build -k`; modprobe coverage lives in the
+  # Vagrant matrix (see vagrant/test-all.sh).
+  rcraid-dkms-rpm-ci-job:
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - almalinux:8
+          - almalinux:9
+          - opensuse/leap:15.6
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    name: ${{ github.event.repository.name }}_rpm_${{ matrix.image }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: rpm_build_and_dkms_compile
+        run: bash ./vagrant/ci-container-test.sh

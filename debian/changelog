@@ -1,3 +1,13 @@
+rcraid (9.3.2-1) noble; urgency=low
+
+   * AMD RAIDXpert2 driver 9.3.2
+   * Support for Linux kernels up to 6.18+
+     (bios_param gendisk signature, timer_container_of,
+     timer_delete_sync, sdev_configure, strict prototypes)
+   * Auto-detect clang-built kernels (e.g. xanmod) when building
+
+ -- kernelzilla <root@localhost>  Tue, 22 Sep 2026 20:30:00 +0000
+
 rcraid (8.1.0) bionic; urgency=low
 
    * Initial release

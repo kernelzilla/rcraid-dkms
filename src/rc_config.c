@@ -1,14 +1,25 @@
 /****************************************************************************
  *
  * Copyright 2010-2013 Dot Hill Systems Corp. All rights reserved.
+ * Copyright © 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  ****************************************************************************/
 
-#include <linux/version.h>
 
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/miscdevice.h>
+#include <linux/version.h>
+/* genhd.h was folded into blkdev.h upstream in v5.18; some distro kernels
+ * (RHEL 9.x) did the same inside 5.14 backports. Include it only when it
+ * actually exists. */
+#if defined(__has_include)
+#  if __has_include(<linux/genhd.h>)
+#    include <linux/genhd.h>
+#  endif
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5,17,0)
+#  include <linux/genhd.h>
+#endif
 #include <linux/sched.h>
 #include <linux/completion.h>
 
@@ -17,6 +28,7 @@
 #include <linux/pagemap.h>
 #include <linux/interrupt.h>
 #include <linux/compat.h>
+#include <linux/pci.h>          // struct msix_entry
 
 #include <scsi/scsi.h>
 #include <scsi/sg.h>
@@ -26,10 +38,6 @@
 #include "rc_scsi.h"
 #include "rc_msg_platform.h"
 #include "rc_adapter.h"
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5,18,0)
-#include <linux/genhd.h>
-#endif
 
 #ifndef GFP_NOWAIT
 #define GFP_NOWAIT	(GFP_ATOMIC & ~__GFP_HIGH)
@@ -43,8 +51,8 @@ extern void rc_msg_process_srb(rc_srb_t *);
 
 struct semaphore rccfg_wait;
 
-static void
-rccfg_callback (rc_srb_t *srb)
+static void 
+rccfg_callback (rc_srb_t *srb) 
 {
 	up(&rccfg_wait);
 }
@@ -91,7 +99,7 @@ rccfg_io(struct sg_io_hdr *hdr)
 	}
 	memset(srb, 0, size);
 
-    target = 24; // hack alert
+    target = RC_MAX_SCSI_TARGETS-1; // hack alert
 	srb->function     = RC_SRB_EXECUTE_SCSI;
 	srb->status       = RC_SRB_STATUS_SUCCESS;
 	srb->bus          = 0;
@@ -100,11 +108,11 @@ rccfg_io(struct sg_io_hdr *hdr)
 	switch (hdr->dxfer_direction) {
 	case SG_DXFER_TO_DEV:
 		srb->flags    = RC_SRB_FLAGS_DATA_IN;
-		break;
+        break;
 	case SG_DXFER_TO_FROM_DEV:
 	case SG_DXFER_FROM_DEV:
 		srb->flags    = RC_SRB_FLAGS_DATA_OUT;
-		break;
+        break;
 	}
 
 	if(!(srb->cdb = kmalloc(hdr->cmd_len, GFP_NOWAIT)) ) {
@@ -139,7 +147,6 @@ rccfg_io(struct sg_io_hdr *hdr)
 
 	/* always copy data in from user */
 	if(copy_from_user(data, hdr->dxferp, hdr->dxfer_len)) {
-		printk("%s: copy_from_user failed\n",__FUNCTION__);
 		err = -EFAULT;
 		goto out_data_free;
 	}
@@ -160,19 +167,19 @@ rccfg_io(struct sg_io_hdr *hdr)
 		state->srb_q.tail = srb;
 	}
 	spin_unlock_irqrestore(&state->srb_q.lock, irql);
-
+    
 	state->stats.scb_total++;
 	state->stats.target_total[target]++;
 
 	atomic_inc(&state->stats.scb_pending);
 	atomic_inc(&state->stats.target_pending[target]);
-
+    
 	tasklet_schedule(&state->srb_q.tasklet);
 
         // wait for callback completion
 	down(&rccfg_wait);
 
-	/* copy the srb status back into the sg hdr status
+	/* copy the srb status back into the sg hdr status 
 	 * this is appear to all that the user space uses
 	 * for error reporting, but it might need sense data
 	 * at some point
@@ -180,7 +187,6 @@ rccfg_io(struct sg_io_hdr *hdr)
 	hdr->status = srb->status;
 
 	if(copy_to_user(hdr->dxferp, data, hdr->dxfer_len)) {
-		printk("%s: copy_from_user failed\n",__FUNCTION__);
 		err = -EFAULT;
 		goto out_data_free;
 	}

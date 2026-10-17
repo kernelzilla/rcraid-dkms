@@ -1,0 +1,58 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Vagrantfile for building and testing the rcraid-dkms RPM.
+#
+# VMs (all use the libvirt provider):
+#   rcraid-el8         - EL8   (AlmaLinux 8)
+#   rcraid-el9         - EL9   (AlmaLinux 9)
+#   rcraid-opensuse15  - openSUSE Leap 15.6
+#
+# Each VM is provisioned in two phases:
+#   1. provision-deps.sh - install dkms/kernel-devel/rpm-build + update kernel
+#      :reload           - reboot into the updated kernel (vagrant-reload)
+#   2. build-test.sh     - build the RPM, install it, run vagrant/verify.sh
+#
+# Usage:
+#   vagrant up rcraid-el9           # one VM
+#   vagrant/test-all.sh             # all three, pulls artifacts into dist/
+#
+# The repo is pushed into the guest with the "file" provisioner (no rsync
+# or NFS needed on host or guest); the synced folder is disabled on
+# purpose.
+
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |lv|
+    lv.memory = 4096
+    lv.cpus   = 4
+    # qcow2 overlay images: do not rewrite the base box
+    lv.storage_pool_name = "default"
+    # NAT network with DNS disabled (<dns enable='no'/>) so libvirt's
+    # dnsmasq only serves DHCP and does not collide with a resolver
+    # already bound to host port 53. Create once with:
+    #   virsh net-define vagrant/vagrantnet.xml && virsh net-start vagrantnet
+    lv.management_network_name = "vagrantnet"
+  end
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  {
+    "el8"        => "almalinux/8",
+    "el9"        => "almalinux/9",
+    "opensuse15" => "opensuse/Leap-15.6.x86_64",
+  }.each do |name, box|
+    config.vm.define "rcraid-#{name}" do |node|
+      node.vm.box = box
+      node.vm.hostname = "rcraid-#{name}"
+
+      # push the working tree into the guest (scp-based, provider-agnostic)
+      node.vm.provision "file", source: ".", destination: "$HOME/rcraid-dkms"
+
+      node.vm.provision "deps", type: "shell",
+        path: "vagrant/provision-deps.sh"
+      node.vm.provision :reload
+      node.vm.provision "build-test", type: "shell", privileged: true,
+        path: "vagrant/build-test.sh"
+    end
+  end
+end
