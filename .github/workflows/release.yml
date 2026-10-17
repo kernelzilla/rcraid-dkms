@@ -121,6 +121,11 @@ jobs:
         with:
           name: packages-deb
           path: dist/deb/
+      # Container steps run as root; hand ownership of the shared runner
+      # workdir back so later jobs can clean/checkout.
+      - name: Restore workspace ownership
+        if: always()
+        run: chown -R "$(stat -c '%u:%g' "$GITHUB_WORKSPACE/.." || echo 1000:1000)" "$GITHUB_WORKSPACE" || true
 
   # -------------------------------------------------------------------
   # Arch package
@@ -145,6 +150,11 @@ jobs:
         with:
           name: packages-arch
           path: dist/arch/
+      # Container steps run as root; hand ownership of the shared runner
+      # workdir back so later jobs can clean/checkout.
+      - name: Restore workspace ownership
+        if: always()
+        run: chown -R "$(stat -c '%u:%g' "$GITHUB_WORKSPACE/.." || echo 1000:1000)" "$GITHUB_WORKSPACE" || true
 
   # -------------------------------------------------------------------
   # Tag-only: collect every package, generate a changelog since the
