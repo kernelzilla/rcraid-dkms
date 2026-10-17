@@ -43,6 +43,13 @@ elif command -v apt-get >/dev/null 2>&1; then
         apt-get install -y linux-xanmod-x64v3
         apt-get install -y linux-headers-xanmod-x64v3 \
             || apt-get install -y linux-headers-xanmod || true
+    elif [ "${VANILLA_KERNEL:-}" = "1" ]; then
+        # ToeiRei/kernel-deb packagecloud repo: prebuilt vanilla kernel debs
+        # (linux-image|linux-headers-<kver>-toeirei). Kernels are unsigned.
+        curl -fsSL "https://packagecloud.io/install/repositories/debian-kernels/buster/script.deb.sh" | bash
+        apt-get update
+        apt-get install -y "linux-image-${VANILLA_KVER}-toeirei" \
+                           "linux-headers-${VANILLA_KVER}-toeirei"
     else
         apt-get -y dist-upgrade
         apt-get install -y linux-headers-generic \

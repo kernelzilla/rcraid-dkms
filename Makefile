@@ -6,7 +6,7 @@
 #   make collect            pull built RPMs out of all running VMs
 #   make destroy            vagrant destroy all test VMs
 
-VMS := rcraid-el8 rcraid-el9 rcraid-opensuse15 rcraid-ubuntu-xanmod
+VMS := rcraid-el8 rcraid-el9 rcraid-opensuse15 rcraid-ubuntu-xanmod rcraid-debian-vanilla72
 
 .PHONY: tarball vagrant-test collect destroy $(VMS:%=vagrant-test-%)
 

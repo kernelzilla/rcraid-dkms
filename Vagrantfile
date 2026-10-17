@@ -47,6 +47,7 @@ Vagrant.configure("2") do |config|
     "el9"        => "almalinux/9",
     "opensuse15" => "opensuse/Leap-15.6.x86_64",
     "ubuntu-xanmod" => "alvistack/ubuntu-24.04",
+    "debian-vanilla72" => "debian/trixie64",
   }.each do |name, box|
     config.vm.define "rcraid-#{name}" do |node|
       node.vm.box = box
@@ -56,7 +57,11 @@ Vagrant.configure("2") do |config|
       node.vm.provision "file", source: ".", destination: "$HOME/rcraid-dkms"
 
       node.vm.provision "deps", type: "shell",
-        env: { "XANMOD" => name == "ubuntu-xanmod" ? "1" : "0" },
+        env: {
+          "XANMOD"         => name == "ubuntu-xanmod" ? "1" : "0",
+          "VANILLA_KERNEL" => name == "debian-vanilla72" ? "1" : "0",
+          "VANILLA_KVER"   => "7.2.11",
+        },
         path: "vagrant/provision-deps.sh"
       node.vm.provision :reload
       node.vm.provision "build-test", type: "shell", privileged: true,

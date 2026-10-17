@@ -36,6 +36,7 @@ module against each distro's kernel-devel.
 | **Ubuntu 22.04** (kernel 5.15) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-22.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
 | **Ubuntu 24.04** (kernel 6.8) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-24.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
 | **Ubuntu + xanmod** (kernel 7.2) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-ubuntu-xanmod&style=flat-square&logo=ubuntu&logoColor=white&label=vagrant"/> |
+| **Debian 13** (vanilla 7.2.11) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-debian-vanilla72&style=flat-square&logo=debian&logoColor=white&label=vagrant"/> |
 | **Debian** (.deb package) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-debian&style=flat-square&logo=debian&logoColor=white&label=package"/> |
 | **Arch** (.pkg.tar.zst) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-arch&style=flat-square&logo=archlinux&logoColor=white&label=package"/> |
 | **Release** (tag → GitHub release) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=github-release&style=flat-square&logo=github&logoColor=white&label=release"/> |
@@ -183,6 +184,7 @@ provider):
 | `rcraid-el9`       | `almalinux/9`             | 5.14 (EL9)    |
 | `rcraid-opensuse15`| `opensuse/Leap-15.6.x86_64` | 6.4 (SUSE)  |
 | `rcraid-ubuntu-xanmod` | `alvistack/ubuntu-24.04` | 7.2 (xanmod x64v3) |
+| `rcraid-debian-vanilla72` | `debian/trixie64` | 7.2.11 vanilla ([kernel-deb](https://github.com/ToeiRei/kernel-deb)) |
 
 Host requirements: KVM (`/dev/kvm`), libvirt + virsh, Vagrant (>= 2.4)
 and the `vagrant-libvirt` and `vagrant-reload` plugins, plus membership

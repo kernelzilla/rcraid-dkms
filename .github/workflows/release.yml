@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [el8, el9, opensuse15, ubuntu-xanmod]
+        distro: [el8, el9, opensuse15, ubuntu-xanmod, debian-vanilla72]
     env:
       VAGRANT_LIBVIRT_NETWORK: vagrantnet
       # Keep CI-created domains distinct from manually managed VMs on the
