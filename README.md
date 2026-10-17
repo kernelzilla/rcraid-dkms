@@ -212,7 +212,7 @@ Distro notes:
 * Download and unpack zip or:
 
 ```bash
-  git clone https://github.com/thopiekar/rcraid-dkms.git
+  git clone https://github.com/kernelzilla/rcraid-dkms.git
 ```
 
 * From inside "arch" directory:
