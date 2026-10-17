@@ -1,0 +1,14 @@
+#!/bin/sh
+# prerm for rcraid-dkms — drop the DKMS module before the sources
+# disappear from /usr/src.
+set -e
+
+case "$1" in
+    remove|upgrade)
+        dkms remove -m rcraid -v @VERSION@ --all || true
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

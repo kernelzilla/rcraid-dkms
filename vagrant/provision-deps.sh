@@ -20,8 +20,36 @@ elif command -v zypper >/dev/null 2>&1; then
     zypper -n up -y kernel-default || true
     zypper -n install -y dkms kernel-default-devel kernel-devel \
                          rpm-build gcc make
+elif command -v apt-get >/dev/null 2>&1; then
+    # ---- Debian / Ubuntu -------------------------------------------------
+    # XANMOD=1 additionally enables the xanmod.org repo and installs
+    # linux-xanmod-x64v3 (clang-built kernel -> clang/lld are installed
+    # unconditionally since the module Makefile auto-detects
+    # CONFIG_CC_IS_CLANG).
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y build-essential dkms debhelper devscripts \
+                       rsync curl wget gpg ca-certificates \
+                       clang llvm lld
+    if [ "${XANMOD:-}" = "1" ]; then
+        # xanmod.org repo — suite name is the distro codename (noble, ...)
+        . /etc/os-release
+        install -d -m 0755 /etc/apt/keyrings
+        curl -fsSL https://dl.xanmod.org/archive.key \
+            | gpg --dearmor -o /etc/apt/keyrings/xanmod-archive-keyring.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/xanmod-archive-keyring.gpg] http://deb.xanmod.org ${VERSION_CODENAME} main" \
+            > /etc/apt/sources.list.d/xanmod-release.list
+        apt-get update
+        apt-get install -y linux-xanmod-x64v3
+        apt-get install -y linux-headers-xanmod-x64v3 \
+            || apt-get install -y linux-headers-xanmod || true
+    else
+        apt-get -y dist-upgrade
+        apt-get install -y linux-headers-generic \
+            || apt-get install -y "linux-headers-$(uname -r)" || true
+    fi
 else
-    echo "ERROR: unsupported distro - neither dnf nor zypper found" >&2
+    echo "ERROR: unsupported distro - no dnf, zypper or apt-get found" >&2
     exit 1
 fi
 

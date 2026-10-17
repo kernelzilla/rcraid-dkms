@@ -12,8 +12,42 @@ SRC=/home/vagrant/rcraid-dkms
 TOPDIR=/root/rpmbuild
 ART=/tmp/rcraid-artifacts
 
+mkdir -p "$ART"
+
+# ---- Debian/Ubuntu path: build + install the .deb -----------------------
+# (xanmod test VM and any apt-based guest). dpkg-buildpackage produces the
+# dkms package; installing it triggers the module build via dh_dkms hooks.
+if command -v apt-get >/dev/null 2>&1; then
+    export DEBIAN_FRONTEND=noninteractive
+    cd "$SRC"
+    dpkg-buildpackage -us -uc -b
+    DEB="$(find "$SRC/.." -maxdepth 1 -name 'rcraid-dkms_*.deb' | head -n1)"
+    test -n "$DEB"
+    apt-get install -y "$DEB"
+
+    bash "$SRC/vagrant/verify.sh"
+
+    cp "$SRC/.."/*.deb "$ART/" 2>/dev/null || true
+    uname -r > "$ART/kernel.txt"
+    echo "=== artifacts in $ART ==="
+    ls -la "$ART"
+
+    # reinstall (verify.sh removed it) then detached load test
+    apt-get install -y "$DEB"
+    rm -f /tmp/rcraid-smoke.rc
+    nohup bash "$SRC/vagrant/verify-load.sh" >/dev/null 2>&1 &
+    sleep 45
+    if [ -f /tmp/rcraid-smoke.rc ]; then
+        echo "load test result: $(cat /tmp/rcraid-smoke.rc) (0=ok)"
+        [ "$(cat /tmp/rcraid-smoke.rc)" = "0" ]
+    else
+        echo "load test result unknown - NIC probably died; check console screenshot"
+    fi
+    exit 0
+fi
+
 # rpmbuild tree
-mkdir -p "$TOPDIR"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS} "$ART"
+mkdir -p "$TOPDIR"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
 # ---- source tarball + spec ---------------------------------------------
 TARBALL="$("$SRC/rpm/mksources.sh" "$TOPDIR/SOURCES")"

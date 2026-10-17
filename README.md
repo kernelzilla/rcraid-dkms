@@ -35,6 +35,7 @@ module against each distro's kernel-devel.
 | **openSUSE Leap 15.6** (kernel 6.4) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-opensuse15&style=flat-square&logo=opensuse&logoColor=white&label=vagrant"/> <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_rpm_opensuse%2Fleap%3A15.6&style=flat-square&logo=opensuse&logoColor=white&label=container"/> |
 | **Ubuntu 22.04** (kernel 5.15) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-22.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
 | **Ubuntu 24.04** (kernel 6.8) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-24.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
+| **Ubuntu + xanmod** (kernel 7.2) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-ubuntu-xanmod&style=flat-square&logo=ubuntu&logoColor=white&label=vagrant"/> |
 | **Debian** (.deb package) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-debian&style=flat-square&logo=debian&logoColor=white&label=package"/> |
 | **Arch** (.pkg.tar.zst) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-arch&style=flat-square&logo=archlinux&logoColor=white&label=package"/> |
 | **Release** (tag → GitHub release) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=github-release&style=flat-square&logo=github&logoColor=white&label=release"/> |
@@ -90,6 +91,7 @@ Continuously verified builds (Vagrant/CI matrix):
 | 6.4.x  | openSUSE **Leap 15.6**    | builds, loads, DKMS  |
 | 6.8.x  | Ubuntu 24.04              | builds               |
 | 6.18.x | xanmod (clang toolchain)  | builds               |
+| 7.2.x  | xanmod x64v3 (clang/lld)  | builds, loads, DKMS  |
 
 Anything between these points should build as well — the compat layer
 keys on API presence, not version numbers — but the matrix above is
@@ -180,6 +182,7 @@ provider):
 | `rcraid-el8`       | `almalinux/8`             | 4.18 (EL8)    |
 | `rcraid-el9`       | `almalinux/9`             | 5.14 (EL9)    |
 | `rcraid-opensuse15`| `opensuse/Leap-15.6.x86_64` | 6.4 (SUSE)  |
+| `rcraid-ubuntu-xanmod` | `alvistack/ubuntu-24.04` | 7.2 (xanmod x64v3) |
 
 Host requirements: KVM (`/dev/kvm`), libvirt + virsh, Vagrant (>= 2.4)
 and the `vagrant-libvirt` and `vagrant-reload` plugins, plus membership

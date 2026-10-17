@@ -9,7 +9,15 @@ VERSION ?= $(shell dpkg-parsechangelog |\
 
 override_dh_install:
 	mkdir -p debian/tmp/usr/src/rcraid-$(VERSION)
-	dh_install -prcraid-dkms src/ usr/src/rcraid-$(VERSION)
+	dh_install -prcraid-dkms src/. usr/src/rcraid-$(VERSION)
 	dh_install -prcraid-dkms debian/modules.d usr/share/initramfs-tools/
-	dh_dkms -V $(VERSION)
+	# dkms 3.x dropped dh_dkms: generate maintainer scripts that run
+	# dkms add/build/install (and remove) directly.
+	for f in postinst prerm; do \
+	    sed 's/@VERSION@/$(VERSION)/g' debian/$$f.in > debian/rcraid-dkms.$$f; \
+	done
 	dh_install
+
+override_dh_clean:
+	rm -f debian/rcraid-dkms.postinst debian/rcraid-dkms.prerm
+	dh_clean

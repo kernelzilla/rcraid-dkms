@@ -1,0 +1,16 @@
+#!/bin/sh
+# postinst for rcraid-dkms — dkms 3.x has no dh_dkms helper, so the
+# module is registered/built/installed here directly.
+set -e
+
+#DEBHELPER#
+
+case "$1" in
+    configure)
+        dkms add     -m rcraid -v @VERSION@ || true
+        dkms build   -m rcraid -v @VERSION@ || true
+        dkms install -m rcraid -v @VERSION@ || true
+        ;;
+esac
+
+exit 0

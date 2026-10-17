@@ -21,8 +21,13 @@ PKG=rcraid-dkms
 MOD=rcraid
 
 echo "=== [1/5] package metadata ==="
-rpm -q "$PKG"
-rpm -ql "$PKG" | grep -E 'dkms.conf|Makefile|rcblob'
+if command -v rpm >/dev/null 2>&1; then
+    rpm -q "$PKG"
+    rpm -ql "$PKG" | grep -E 'dkms.conf|Makefile|rcblob'
+else
+    dpkg-query -W "$PKG"
+    dpkg -L "$PKG" | grep -E 'dkms.conf|Makefile|rcblob'
+fi
 
 echo "=== [2/5] dkms status ==="
 dkms status
@@ -41,7 +46,11 @@ depmod -a "$KVER"
 modinfo rcraid | grep -E 'filename|version|license'
 
 echo "=== [5/5] package removal ==="
-rpm -e "$PKG"
+if command -v rpm >/dev/null 2>&1; then
+    rpm -e "$PKG"
+else
+    dpkg -r "$PKG"
+fi
 if dkms status "$MOD" | grep -q .; then
     echo "FAIL: dkms module still registered after rpm -e" >&2
     exit 1
