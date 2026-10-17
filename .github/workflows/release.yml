@@ -1,0 +1,179 @@
+name: rcraid-dkms-release
+
+# Vagrant/libvirt builds+tests the DKMS module on EL8, EL9 and openSUSE
+# Leap 15 on every push/PR. When a tag is pushed, the RPMs produced inside
+# those VMs — plus a .deb and an Arch package built in containers — are
+# attached to a GitHub release.
+on:
+  push:
+    branches: [main, compatibility_updates]
+    tags: ["*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # -------------------------------------------------------------------
+  # Full VM pipeline per distro: rpmbuild + rpm install + dkms build/
+  # install + verify.sh; the detached modprobe smoke test runs last and
+  # can kill the virtio NIC, so we reload before pulling artifacts.
+  # -------------------------------------------------------------------
+  vagrant-matrix:
+    name: vagrant-${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [el8, el9, opensuse15]
+    env:
+      VAGRANT_LIBVIRT_NETWORK: default
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libvirt, KVM and Vagrant
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-kvm libvirt-daemon-system \
+            libvirt-clients libvirt-dev libxslt-dev libxml2-dev \
+            zlib1g-dev ruby-dev rsync curl
+          curl -fsSL -o /tmp/vagrant.deb \
+            https://releases.hashicorp.com/vagrant/2.4.9/vagrant_2.4.9-1_amd64.deb
+          sudo dpkg -i /tmp/vagrant.deb || sudo apt-get -f install -y
+          sudo usermod -aG libvirt,kvm $USER
+
+      - name: Enable KVM and the libvirt default network
+        run: |
+          sudo modprobe kvm-intel 2>/dev/null || sudo modprobe kvm-amd 2>/dev/null || true
+          sudo chmod 666 /dev/kvm 2>/dev/null || true
+          sudo systemctl start libvirtd
+          sudo virsh net-start default 2>/dev/null || true
+
+      - name: Install vagrant plugins
+        run: vagrant plugin install vagrant-libvirt vagrant-reload
+
+      - name: Build and test in rcraid-${{ matrix.distro }}
+        run: sg libvirt -c "vagrant up rcraid-${{ matrix.distro }} --provider=libvirt" || true
+
+      # The detached modprobe smoke test may have taken the virtio NIC
+      # down; a reload brings networking back so artifacts can be pulled.
+      - name: Reload VM to restore networking
+        run: sg libvirt -c "vagrant reload rcraid-${{ matrix.distro }} --no-provision" || true
+
+      - name: Pull build artifacts
+        run: sg libvirt -c "bash vagrant/pull-artifacts.sh rcraid-${{ matrix.distro }}"
+
+      - name: Verify an RPM was produced
+        run: ls dist/${{ matrix.distro }}/rcraid-dkms-*.x86_64.rpm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.distro }}
+          path: dist/${{ matrix.distro }}/
+
+  # -------------------------------------------------------------------
+  # .deb for Debian/Ubuntu
+  # -------------------------------------------------------------------
+  deb:
+    name: pkg-debian
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build rcraid-dkms .deb
+        run: |
+          apt-get update
+          apt-get install -y build-essential debhelper dkms devscripts
+          dpkg-buildpackage -us -uc -b
+          mkdir -p dist/deb
+          cp ../*.deb dist/deb/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-deb
+          path: dist/deb/
+
+  # -------------------------------------------------------------------
+  # Arch package
+  # -------------------------------------------------------------------
+  arch:
+    name: pkg-arch
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Arch package
+        run: |
+          pacman -Sy --noconfirm --needed sudo
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/builder
+          chown -R builder:builder /__w /github/workspace 2>/dev/null || chown -R builder:builder .
+          cd arch
+          runuser -u builder -- makepkg -s --noconfirm
+          mkdir -p ../dist/arch
+          cp *.pkg.tar.zst ../dist/arch/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-arch
+          path: dist/arch/
+
+  # -------------------------------------------------------------------
+  # Tag-only: collect every package, generate a changelog since the
+  # previous tag, checksums, and create a GitHub release.
+  # -------------------------------------------------------------------
+  release:
+    name: github-release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [vagrant-matrix, deb, arch]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-*
+          merge-multiple: true
+          path: release-files
+
+      - name: Checksums
+        run: |
+          cd release-files
+          find . -type f \( -name '*.rpm' -o -name '*.deb' -o -name '*.pkg.tar.zst' -o -name '*.tar.gz' \) \
+            -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+
+      - name: Generate changelog
+        run: |
+          PREV_TAG=$(git tag --sort=-v:refname | grep -vx "${GITHUB_REF_NAME}" | head -1 || true)
+          {
+            echo "DKMS packages for the AMD RAIDXpert (rcraid) driver."
+            echo
+            echo "- RPMs built and DKMS-tested on AlmaLinux 8, AlmaLinux 9 and openSUSE Leap 15 via the Vagrant pipeline"
+            echo "- .deb for Debian/Ubuntu"
+            echo "- Arch package (.pkg.tar.zst)"
+            echo "- Verify integrity with SHA256SUMS.txt"
+            echo
+            echo "## Changes${PREV_TAG:+ since $PREV_TAG}"
+            echo
+            if [ -n "$PREV_TAG" ]; then
+              git log --pretty=format:'- %s (%h)' "$PREV_TAG"..HEAD
+            else
+              git log --pretty=format:'- %s (%h)' HEAD
+            fi
+          } > RELEASE_NOTES.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: rcraid-dkms ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: true
+          files: |
+            release-files/**/*.rpm
+            release-files/**/*.deb
+            release-files/**/*.pkg.tar.zst
+            release-files/**/*.tar.gz
+            release-files/**/SHA256SUMS.txt
+            release-files/**/smoke.rc
+            release-files/**/console.png

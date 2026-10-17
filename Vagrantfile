@@ -31,7 +31,9 @@ Vagrant.configure("2") do |config|
     # dnsmasq only serves DHCP and does not collide with a resolver
     # already bound to host port 53. Create once with:
     #   virsh net-define vagrant/vagrantnet.xml && virsh net-start vagrantnet
-    lv.management_network_name = "vagrantnet"
+    # On a clean host/CI runner the stock libvirt "default" network works:
+    #   VAGRANT_LIBVIRT_NETWORK=default vagrant up rcraid-el8
+    lv.management_network_name = ENV["VAGRANT_LIBVIRT_NETWORK"] || "vagrantnet"
   end
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
