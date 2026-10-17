@@ -243,10 +243,6 @@ to know that deleting arrays only removes metadata. Partitions are still there, 
 recovered with gdisk, gpart etc. I found out that offset for partitions is 1069056 sectors (512B).
 So if you have partition starting at usual 2048 it will be at 1071104 after array deletion.
 
-Further info
-============
-  * https://thopiekar.eu/other/amd-raidxpress/
-
 Thanks go to..
 ==============
   * To AMD to hand out the driver as source code at least. (Some history: Just think about Intel Poulsbo..)
