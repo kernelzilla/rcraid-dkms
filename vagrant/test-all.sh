@@ -6,7 +6,9 @@
 #
 # For each VM: `vagrant up` (provisions deps, reboots, builds the RPM,
 # installs it and runs vagrant/verify.sh in the guest), then pulls the
-# built artifacts back into dist/.
+# built artifacts back into dist/. Only then is the destructive modprobe
+# smoke test triggered (it may kill the virtio NIC); a reload restores
+# networking so the smoke result + console screenshot can be pulled.
 set -uo pipefail
 
 cd "$(dirname "$0")/.."
@@ -21,7 +23,18 @@ for vm in $VMS; do
     echo "================================================================"
     if vagrant up "$vm" --provider=libvirt; then
         vagrant/pull-artifacts.sh "$vm"
-        PASS+=("$vm")
+        timeout 240 vagrant ssh "$vm" \
+            -c 'sudo bash /home/vagrant/rcraid-dkms/vagrant/load-test.sh' \
+            || echo "*** $vm: load test unreachable/timed out (NIC teardown expected)"
+        vagrant reload "$vm" --no-provision || true
+        vagrant/pull-artifacts.sh "$vm" || true
+        rc="$(cat "dist/${vm#rcraid-}/smoke.rc" 2>/dev/null || echo '?')"
+        echo "=== $vm: smoke.rc=$rc"
+        case "$rc" in
+            0|'?') PASS+=("$vm") ;;
+            *) echo "*** $vm FAILED (modprobe smoke test rc=$rc) ***"
+               FAIL+=("$vm") ;;
+        esac
     else
         echo "*** $vm FAILED (see log above) ***"
         FAIL+=("$vm")

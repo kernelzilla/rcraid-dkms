@@ -12,12 +12,16 @@ SHORT="${VM#rcraid-}"
 OUT="dist/$SHORT"
 
 mkdir -p "$OUT"
-vagrant ssh "$VM" -c 'sudo tar -C /root/rcraid-artifacts -cf - . 2>/dev/null' \
-    | tar -xf - -C "$OUT"
+if ! vagrant ssh "$VM" -c 'sudo tar -C /root/rcraid-artifacts -cf - . 2>/dev/null' \
+    | tar -xf - -C "$OUT"; then
+    echo "WARNING: ssh to $VM failed; no artifacts pulled" >&2
+fi
 
 # modprobe smoke-test evidence: the result code + a VM console screenshot.
-vagrant ssh "$VM" -c 'sudo cat /root/rcraid-smoke.rc 2>/dev/null' \
-    > "$OUT/smoke.rc" 2>/dev/null || true
+RC="$(vagrant ssh "$VM" -c 'sudo cat /root/rcraid-smoke.rc 2>/dev/null' || true)"
+if [ -n "$RC" ]; then
+    printf '%s' "$RC" > "$OUT/smoke.rc"
+fi
 DOMAIN=$(virsh -c qemu:///system list --all --name 2>/dev/null \
     | grep -E "(^|_)${VM}$" | head -1 || true)
 if [ -n "$DOMAIN" ] \

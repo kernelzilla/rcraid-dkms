@@ -5,7 +5,9 @@
 # installed kernel. Builds the source tarball + RPM, installs the RPM
 # (which triggers dkms add/build/install through %post) and runs the
 # verification suite. Built artifacts are staged in /root/rpmbuild and
-# copied to /root/rcraid-artifacts for the host-side pull script.
+# copied to /root/rcraid-artifacts for the host-side pull script. The
+# destructive modprobe smoke test is deliberately NOT run here - see
+# vagrant/load-test.sh.
 set -euxo pipefail
 
 SRC=/home/vagrant/rcraid-dkms
@@ -49,16 +51,6 @@ if command -v apt-get >/dev/null 2>&1; then
         fi
     done
     cat "$ART/kernels.txt" 2>/dev/null || true
-
-    rm -f /root/rcraid-smoke.rc
-    nohup bash "$SRC/vagrant/verify-load.sh" >/dev/null 2>&1 &
-    sleep 45
-    if [ -f /root/rcraid-smoke.rc ]; then
-        echo "load test result: $(cat /root/rcraid-smoke.rc) (0=ok)"
-        [ "$(cat /root/rcraid-smoke.rc)" = "0" ]
-    else
-        echo "load test result unknown - NIC probably died; check console screenshot"
-    fi
     exit 0
 fi
 
@@ -88,19 +80,7 @@ cp "$TARBALL" "$ART/"
 echo "=== artifacts in $ART ==="
 ls -la "$ART"
 
-# ---- destructive load test ----------------------------------------------
-# Reinstall the rpm (verify.sh removed it) so the module is present, then
-# insert it. The driver's PCI probing may kill the virtio NIC on machines
-# without RAID hardware, so this runs detached and logs to the VM console
-# (readable via `virsh screenshot`); the result code lands in
-# /root/rcraid-smoke.rc.
-rpm -Uvh --replacepkgs --replacefiles "$RPM"
-rm -f /root/rcraid-smoke.rc
-nohup bash "$SRC/vagrant/verify-load.sh" >/dev/null 2>&1 &
-sleep 45
-if [ -f /root/rcraid-smoke.rc ]; then
-    echo "load test result: $(cat /root/rcraid-smoke.rc) (0=ok)"
-    [ "$(cat /root/rcraid-smoke.rc)" = "0" ]
-else
-    echo "load test result unknown - NIC probably died; check console screenshot"
-fi
+# The destructive modprobe smoke test lives in vagrant/load-test.sh and
+# runs *after* the artifacts have been pulled to the host: the driver's
+# PCI probing may kill the virtio NIC, which would make this guest
+# unreachable over ssh.

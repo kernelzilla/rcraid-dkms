@@ -217,11 +217,13 @@ make vagrant-test-el8      # Makefile shortcuts
 Per VM the pipeline is: install dkms/kernel-devel/rpm-build, update the
 kernel, reboot, `rpmbuild -ba` (binary + src.rpm), `rpm -Uvh` (which runs
 `dkms add/build/install` via `%post`), then `vagrant/verify.sh` asserts
-the dkms state, module file, `modinfo`, and clean package removal. A final
-`verify-load.sh` inserts the module and logs the result to the VM
-console — on machines without RAID hardware the driver's PCI probing can
-disturb the virtio NIC, so the load test deliberately runs last and is
-also readable via `virsh screenshot <domain>`.
+the dkms state, module file, `modinfo`, and clean package removal. The
+built artifacts are pulled to `dist/` *before* the destructive part:
+`vagrant/load-test.sh` (run via `vagrant ssh`, or by CI) reinstalls the
+package and inserts the module — on machines without RAID hardware the
+driver's PCI probing can disturb the virtio NIC, so the load test
+deliberately runs last; its result is logged to the VM console
+(readable via `virsh screenshot <domain>`) and `/root/rcraid-smoke.rc`.
 
 Note: `modprobe rcraid` is a smoke test only — without Promontory RAID
 hardware the module loads but binds to nothing, and in VMs it can take

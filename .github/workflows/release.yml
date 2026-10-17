@@ -21,8 +21,10 @@ permissions:
 jobs:
   # -------------------------------------------------------------------
   # Full VM pipeline per distro: rpmbuild + rpm install + dkms build/
-  # install + verify.sh; the detached modprobe smoke test runs last and
-  # can kill the virtio NIC, so we reload before pulling artifacts.
+  # install + verify.sh; artifacts are pulled before the modprobe smoke
+  # test, since it can kill the virtio NIC (and on EL the rpm's dracut
+  # hook bakes rcraid into the initramfs, so it may stay dead across a
+  # reload). CI domains are destroyed at job end to free the runner.
   # -------------------------------------------------------------------
   vagrant-matrix:
     name: vagrant-${{ matrix.distro }}
@@ -90,21 +92,53 @@ jobs:
       - name: Build and test in rcraid-${{ matrix.distro }}
         run: sg libvirt -c "vagrant up rcraid-${{ matrix.distro }} --provider=libvirt" || true
 
-      # The detached modprobe smoke test may have taken the virtio NIC
-      # down; a reload brings networking back so artifacts can be pulled.
-      - name: Reload VM to restore networking
-        run: sg libvirt -c "vagrant reload rcraid-${{ matrix.distro }} --no-provision" || true
-
+      # Artifacts are pulled BEFORE the destructive load test: the
+      # driver's PCI probing can kill the virtio NIC, leaving the guest
+      # unreachable over ssh afterwards. On EL guests rcraid is also
+      # baked into the initramfs by the rpm's dracut hook, so a reload
+      # may bring the module (and the dead NIC) right back.
       - name: Pull build artifacts
         run: sg libvirt -c "bash vagrant/pull-artifacts.sh rcraid-${{ matrix.distro }}"
 
-      - name: Verify an RPM was produced
-        run: ls dist/${{ matrix.distro }}/rcraid-dkms-*.x86_64.rpm
+      - name: Verify a package was produced
+        run: |
+          find "dist/${{ matrix.distro }}" \
+            \( -name 'rcraid-dkms-*.x86_64.rpm' -o -name 'rcraid-dkms_*.deb' \) \
+            -print -quit | grep -q .
+
+      - name: Run modprobe smoke test (destructive, may kill the NIC)
+        run: |
+          sg libvirt -c "timeout 240 vagrant ssh rcraid-${{ matrix.distro }} \
+            -c 'sudo bash /home/vagrant/rcraid-dkms/vagrant/load-test.sh'" \
+            || echo "::warning::load test unreachable or timed out - NIC teardown is expected"
+
+      # A reload brings the virtio NIC back so the smoke result code and
+      # a console screenshot can be collected. Tolerated if the guest
+      # never returns: the release job consumes smoke.rc/console.png
+      # only as optional evidence.
+      - name: Reload VM to restore networking
+        run: sg libvirt -c "vagrant reload rcraid-${{ matrix.distro }} --no-provision" || true
+
+      - name: Pull smoke-test evidence
+        run: sg libvirt -c "bash vagrant/pull-artifacts.sh rcraid-${{ matrix.distro }}"
 
       - uses: actions/upload-artifact@v4
         with:
           name: packages-${{ matrix.distro }}
           path: dist/${{ matrix.distro }}/
+
+      # Don't leave CI domains running on the shared runner: each holds
+      # 4G/4vcpu and starves later matrix jobs. Same virsh teardown as
+      # the pre-build cleanup, run unconditionally.
+      - name: Destroy CI VM
+        if: always()
+        run: |
+          sg libvirt -c "vagrant destroy -f rcraid-${{ matrix.distro }}" || true
+          dom="rcraid-ci_rcraid-${{ matrix.distro }}"
+          virsh -c qemu:///system destroy "$dom" || true
+          virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
+            || virsh -c qemu:///system undefine "$dom" || true
+          virsh -c qemu:///system vol-delete --pool default "$dom.img" 2>/dev/null || true
 
   # -------------------------------------------------------------------
   # .deb for Debian/Ubuntu

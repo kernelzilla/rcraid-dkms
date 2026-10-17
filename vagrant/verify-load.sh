@@ -8,8 +8,8 @@
 # screenshot even if ssh dies. The result code is also written to
 # /root/rcraid-smoke.rc.
 #
-# build-test.sh runs this detached (nohup) so a dead NIC cannot abort
-# the rest of provisioning.
+# load-test.sh runs this detached (nohup) so a dead NIC cannot abort
+# the rest of the pipeline.
 #
 # Known quirks of the AMD blob (documented in README):
 #   * SUSE kernels refuse unsupported modules without
