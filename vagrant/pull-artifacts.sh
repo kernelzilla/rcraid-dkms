@@ -18,8 +18,11 @@ vagrant ssh "$VM" -c 'sudo tar -C /tmp/rcraid-artifacts -cf - . 2>/dev/null' \
 # modprobe smoke-test evidence: the result code + a VM console screenshot.
 vagrant ssh "$VM" -c 'cat /tmp/rcraid-smoke.rc 2>/dev/null' \
     > "$OUT/smoke.rc" 2>/dev/null || true
-if virsh -c qemu:///system domstate "rcraid-dkms_$VM" 2>/dev/null | grep -q running; then
-    virsh -c qemu:///system screenshot "rcraid-dkms_$VM" "$OUT/console.png" \
+DOMAIN=$(virsh -c qemu:///system list --all --name 2>/dev/null \
+    | grep -E "(^|_)${VM}$" | head -1 || true)
+if [ -n "$DOMAIN" ] \
+    && virsh -c qemu:///system domstate "$DOMAIN" 2>/dev/null | grep -q running; then
+    virsh -c qemu:///system screenshot "$DOMAIN" "$OUT/console.png" \
         >/dev/null 2>&1 || true
 fi
 echo "==> artifacts for $VM:"

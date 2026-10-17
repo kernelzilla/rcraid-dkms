@@ -34,6 +34,10 @@ Vagrant.configure("2") do |config|
     # On a clean host/CI runner the stock libvirt "default" network works:
     #   VAGRANT_LIBVIRT_NETWORK=default vagrant up rcraid-el8
     lv.management_network_name = ENV["VAGRANT_LIBVIRT_NETWORK"] || "vagrantnet"
+    # Domain names default to "<project-dir-basename>_<vm>"; override to
+    # avoid collisions when several worktrees share the basename (e.g. a
+    # CI runner checkout next to a development checkout).
+    lv.default_prefix = ENV["VAGRANT_DOMAIN_PREFIX"] if ENV["VAGRANT_DOMAIN_PREFIX"]
   end
 
   config.vm.synced_folder ".", "/vagrant", disabled: true

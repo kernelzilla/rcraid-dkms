@@ -30,6 +30,9 @@ jobs:
         distro: [el8, el9, opensuse15]
     env:
       VAGRANT_LIBVIRT_NETWORK: vagrantnet
+      # Keep CI-created domains distinct from manually managed VMs on the
+      # same host (both worktrees share the 'rcraid-dkms' basename).
+      VAGRANT_DOMAIN_PREFIX: rcraid-ci_
     steps:
       - uses: actions/checkout@v4
 
@@ -66,6 +69,16 @@ jobs:
         run: |
           vagrant plugin list | grep -q vagrant-libvirt || vagrant plugin install vagrant-libvirt
           vagrant plugin list | grep -q vagrant-reload  || vagrant plugin install vagrant-reload
+
+      - name: Destroy any stale CI VM
+        run: |
+          sg libvirt -c "vagrant destroy -f rcraid-${{ matrix.distro }}" || true
+          virsh -c qemu:///system list --all --name \
+            | grep -x "rcraid-ci_rcraid-${{ matrix.distro }}" | while read -r dom; do
+              virsh -c qemu:///system destroy "$dom" || true
+              virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
+                || virsh -c qemu:///system undefine "$dom" || true
+            done
 
       - name: Build and test in rcraid-${{ matrix.distro }}
         run: sg libvirt -c "vagrant up rcraid-${{ matrix.distro }} --provider=libvirt" || true
