@@ -73,12 +73,14 @@ jobs:
       - name: Destroy any stale CI VM
         run: |
           sg libvirt -c "vagrant destroy -f rcraid-${{ matrix.distro }}" || true
-          virsh -c qemu:///system list --all --name \
-            | grep -x "rcraid-ci_rcraid-${{ matrix.distro }}" | while read -r dom; do
-              virsh -c qemu:///system destroy "$dom" || true
-              virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
-                || virsh -c qemu:///system undefine "$dom" || true
-            done
+          dom="rcraid-ci_rcraid-${{ matrix.distro }}"
+          if virsh -c qemu:///system list --all --name | grep -qx "$dom"; then
+            virsh -c qemu:///system destroy "$dom" || true
+            virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
+              || virsh -c qemu:///system undefine "$dom" || true
+          fi
+          # orphaned qcow2 volume from a partially-created/undefined domain
+          virsh -c qemu:///system vol-delete --pool default "$dom.img" 2>/dev/null || true
 
       - name: Build and test in rcraid-${{ matrix.distro }}
         run: sg libvirt -c "vagrant up rcraid-${{ matrix.distro }} --provider=libvirt" || true
