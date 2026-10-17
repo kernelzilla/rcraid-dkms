@@ -36,7 +36,9 @@ module against each distro's kernel-devel.
 | **Ubuntu 22.04** (kernel 5.15) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-22.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
 | **Ubuntu 24.04** (kernel 6.8) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/rcraid-dkms-ci.yml?job=rcraid-dkms_ubuntu-24.04&style=flat-square&logo=ubuntu&logoColor=white&label=build"/> |
 | **Ubuntu + xanmod** (kernel 7.2) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-ubuntu-xanmod&style=flat-square&logo=ubuntu&logoColor=white&label=vagrant"/> |
-| **Debian 13** (vanilla 7.2.11) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-debian-vanilla72&style=flat-square&logo=debian&logoColor=white&label=vagrant"/> |
+| **Debian 13** (vanilla, all stable+LTS) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-debian-vanilla&style=flat-square&logo=debian&logoColor=white&label=vagrant"/> |
+| **Ubuntu 24.04** (vanilla, all stable+LTS) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-ubuntu2404-vanilla&style=flat-square&logo=ubuntu&logoColor=white&label=vagrant"/> |
+| **Ubuntu 22.04** (vanilla, all stable+LTS) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=vagrant-ubuntu2204-vanilla&style=flat-square&logo=ubuntu&logoColor=white&label=vagrant"/> |
 | **Debian** (.deb package) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-debian&style=flat-square&logo=debian&logoColor=white&label=package"/> |
 | **Arch** (.pkg.tar.zst) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=pkg-arch&style=flat-square&logo=archlinux&logoColor=white&label=package"/> |
 | **Release** (tag → GitHub release) | <img src="https://img.shields.io/github/actions/workflow/status/kernelzilla/rcraid-dkms/release.yml?job=github-release&style=flat-square&logo=github&logoColor=white&label=release"/> |
@@ -91,8 +93,10 @@ Continuously verified builds (Vagrant/CI matrix):
 | 5.15.x | Ubuntu 22.04              | builds               |
 | 6.4.x  | openSUSE **Leap 15.6**    | builds, loads, DKMS  |
 | 6.8.x  | Ubuntu 24.04              | builds               |
-| 6.18.x | xanmod (clang toolchain)  | builds               |
-| 7.2.x  | xanmod x64v3 (clang/lld)  | builds, loads, DKMS  |
+| 6.18.x | Ubuntu + xanmod (clang)   | builds               |
+| 7.2.x  | Ubuntu + xanmod x64v3 (clang/lld) | builds, loads, DKMS |
+| 7.2.11 | Debian 13, vanilla ([kernel-deb](https://github.com/ToeiRei/kernel-deb)) | builds, loads, DKMS |
+| 5.10 – 7.2 | Debian 13 / Ubuntu 22.04+24.04, all kernel.org stable+longterm series | DKMS-built in CI |
 
 Anything between these points should build as well — the compat layer
 keys on API presence, not version numbers — but the matrix above is
@@ -184,7 +188,9 @@ provider):
 | `rcraid-el9`       | `almalinux/9`             | 5.14 (EL9)    |
 | `rcraid-opensuse15`| `opensuse/Leap-15.6.x86_64` | 6.4 (SUSE)  |
 | `rcraid-ubuntu-xanmod` | `alvistack/ubuntu-24.04` | 7.2 (xanmod x64v3) |
-| `rcraid-debian-vanilla72` | `debian/trixie64` | 7.2.11 vanilla ([kernel-deb](https://github.com/ToeiRei/kernel-deb)) |
+| `rcraid-debian-vanilla` | `debian/trixie64` | 7.2.11 + all series |
+| `rcraid-ubuntu2404-vanilla` | `alvistack/ubuntu-24.04` | 7.2.11 + all series |
+| `rcraid-ubuntu2204-vanilla` | `alvistack/ubuntu-22.04` | 7.2.11 + all series |
 
 Host requirements: KVM (`/dev/kvm`), libvirt + virsh, Vagrant (>= 2.4)
 and the `vagrant-libvirt` and `vagrant-reload` plugins, plus membership

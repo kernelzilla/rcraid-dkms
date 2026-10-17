@@ -47,7 +47,12 @@ Vagrant.configure("2") do |config|
     "el9"        => "almalinux/9",
     "opensuse15" => "opensuse/Leap-15.6.x86_64",
     "ubuntu-xanmod" => "alvistack/ubuntu-24.04",
-    "debian-vanilla72" => "debian/trixie64",
+    # vanilla-kernel targets: ToeiRei/kernel-deb packages, booted on the
+    # latest kernel.org stable; DKMS-builds run for *every* stable and
+    # longterm series' headers (see vagrant/kernel-versions.sh).
+    "debian-vanilla"     => "debian/trixie64",
+    "ubuntu2404-vanilla" => "alvistack/ubuntu-24.04",
+    "ubuntu2204-vanilla" => "alvistack/ubuntu-22.04",
   }.each do |name, box|
     config.vm.define "rcraid-#{name}" do |node|
       node.vm.box = box
@@ -59,8 +64,11 @@ Vagrant.configure("2") do |config|
       node.vm.provision "deps", type: "shell",
         env: {
           "XANMOD"         => name == "ubuntu-xanmod" ? "1" : "0",
-          "VANILLA_KERNEL" => name == "debian-vanilla72" ? "1" : "0",
-          "VANILLA_KVER"   => "7.2.11",
+          "VANILLA_KERNEL" => name.end_with?("-vanilla") ? "1" : "0",
+          # kernel.org version to boot; VANILLA_KVERS=auto means
+          # "headers for every stable+longterm series"
+          "VANILLA_KVER"   => ENV["VANILLA_KVER"] || "7.2.11",
+          "VANILLA_KVERS"  => ENV["VANILLA_KVERS"] || "auto",
         },
         path: "vagrant/provision-deps.sh"
       node.vm.provision :reload

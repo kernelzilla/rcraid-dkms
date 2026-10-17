@@ -48,6 +48,16 @@ elif command -v apt-get >/dev/null 2>&1; then
         # (linux-image|linux-headers-<kver>-toeirei). Kernels are unsigned.
         curl -fsSL "https://packagecloud.io/install/repositories/debian-kernels/buster/script.deb.sh" | bash
         apt-get update
+        # VANILLA_KVERS=auto -> latest release per stable+longterm series
+        KVERS_LIST="${VANILLA_KVERS:-auto}"
+        if [ "$KVERS_LIST" = "auto" ]; then
+            KVERS_LIST="$(bash /home/vagrant/rcraid-dkms/vagrant/kernel-versions.sh 2>/dev/null || echo "$VANILLA_KVER")"
+        fi
+        echo ">> installing headers for kernel series: $KVERS_LIST"
+        for v in $KVERS_LIST; do
+            apt-get install -y "linux-headers-${v}-toeirei" \
+                || echo "WARNING: no headers package for $v" >&2
+        done
         apt-get install -y "linux-image-${VANILLA_KVER}-toeirei" \
                            "linux-headers-${VANILLA_KVER}-toeirei"
     else

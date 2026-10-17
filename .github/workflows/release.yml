@@ -10,6 +10,10 @@ on:
     tags: ["*"]
   pull_request:
   workflow_dispatch:
+  # Weekly: the vanilla-kernel VMs resolve the current stable+longterm
+  # series from kernel.org at provision time, so this schedule doubles
+  # as a new-kernel-release regression check.
+  schedule: [{ cron: "23 5 * * 1" }]
 
 permissions:
   contents: write
@@ -27,7 +31,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [el8, el9, opensuse15, ubuntu-xanmod, debian-vanilla72]
+        distro: [el8, el9, opensuse15, ubuntu-xanmod,
+                 debian-vanilla, ubuntu2404-vanilla, ubuntu2204-vanilla]
     env:
       VAGRANT_LIBVIRT_NETWORK: vagrantnet
       # Keep CI-created domains distinct from manually managed VMs on the

@@ -34,6 +34,22 @@ if command -v apt-get >/dev/null 2>&1; then
 
     # reinstall (verify.sh removed it) then detached load test
     apt-get install -y "$DEB"
+
+    # Multi-kernel check: dkms-build the module against *every* installed
+    # headers tree (vanilla VMs install all stable+longterm series), not
+    # just the running kernel. Results land in kernels.txt artifact.
+    DVER="$(dkms status rcraid | head -1 | cut -d/ -f2 | cut -d, -f1)"
+    for d in /lib/modules/*/build; do
+        kver="$(basename "$(dirname "$d")")"
+        [ "$kver" = "$(uname -r)" ] && continue
+        if dkms build -m rcraid -v "$DVER" -k "$kver" >>"$ART/kernels.log" 2>&1; then
+            echo "$kver BUILD OK" | tee -a "$ART/kernels.txt"
+        else
+            echo "$kver BUILD FAIL" | tee -a "$ART/kernels.txt"
+        fi
+    done
+    cat "$ART/kernels.txt" 2>/dev/null || true
+
     rm -f /root/rcraid-smoke.rc
     nohup bash "$SRC/vagrant/verify-load.sh" >/dev/null 2>&1 &
     sleep 45
