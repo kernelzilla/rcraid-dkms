@@ -243,8 +243,15 @@ to know that deleting arrays only removes metadata. Partitions are still there, 
 recovered with gdisk, gpart etc. I found out that offset for partitions is 1069056 sectors (512B).
 So if you have partition starting at usual 2048 it will be at 1071104 after array deletion.
 
-Thanks go to..
+Special Thanks
 ==============
+This repository is a fork of https://github.com/thopiekar/rcraid-dkms
+by Thomas Karl Pietrowski (@thopiekar), extended to keep the driver
+building on current kernels and to support additional distributions
+(EL8/EL9, openSUSE Leap 15/SLES 15, and newer 6.x kernels).
+
+  * To Thomas Karl Pietrowski for creating and maintaining the original
+    rcraid-dkms project this work builds on.
   * To AMD to hand out the driver as source code at least. (Some history: Just think about Intel Poulsbo..)
     * https://www.amd.com/en/support/chipsets/amd-socket-am4/x370 - section Linux
   * To Martin Weber (@martinkarlweber) for sharing patches to make the driver work on Linux >= 4.15.x
