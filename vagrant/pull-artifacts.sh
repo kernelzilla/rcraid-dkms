@@ -2,7 +2,7 @@
 # pull-artifacts.sh - fetch built RPMs/tarballs from a test VM into dist/.
 #
 # Usage:  vagrant/pull-artifacts.sh <vm-name>
-# Runs on the HOST. Streams the guest's /tmp/rcraid-artifacts (populated by
+# Runs on the HOST. Streams the guest's /root/rcraid-artifacts (populated by
 # build-test.sh) over ssh into dist/<short-vm-name>/.
 set -euo pipefail
 
@@ -12,11 +12,11 @@ SHORT="${VM#rcraid-}"
 OUT="dist/$SHORT"
 
 mkdir -p "$OUT"
-vagrant ssh "$VM" -c 'sudo tar -C /tmp/rcraid-artifacts -cf - . 2>/dev/null' \
+vagrant ssh "$VM" -c 'sudo tar -C /root/rcraid-artifacts -cf - . 2>/dev/null' \
     | tar -xf - -C "$OUT"
 
 # modprobe smoke-test evidence: the result code + a VM console screenshot.
-vagrant ssh "$VM" -c 'cat /tmp/rcraid-smoke.rc 2>/dev/null' \
+vagrant ssh "$VM" -c 'sudo cat /root/rcraid-smoke.rc 2>/dev/null' \
     > "$OUT/smoke.rc" 2>/dev/null || true
 DOMAIN=$(virsh -c qemu:///system list --all --name 2>/dev/null \
     | grep -E "(^|_)${VM}$" | head -1 || true)

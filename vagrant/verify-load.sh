@@ -6,7 +6,7 @@
 # virtio network device on machines without RAID hardware, so output is
 # mirrored to the console where it can be read back via a libvirt
 # screenshot even if ssh dies. The result code is also written to
-# /tmp/rcraid-smoke.rc.
+# /root/rcraid-smoke.rc.
 #
 # build-test.sh runs this detached (nohup) so a dead NIC cannot abort
 # the rest of provisioning.
@@ -47,6 +47,6 @@ else
     RC=1
 fi
 
-echo "$RC" > /tmp/rcraid-smoke.rc
+echo "$RC" > /root/rcraid-smoke.rc
 sync
 exit "$RC"

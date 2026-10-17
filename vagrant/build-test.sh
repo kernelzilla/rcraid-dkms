@@ -5,12 +5,12 @@
 # installed kernel. Builds the source tarball + RPM, installs the RPM
 # (which triggers dkms add/build/install through %post) and runs the
 # verification suite. Built artifacts are staged in /root/rpmbuild and
-# copied to /tmp/rcraid-artifacts for the host-side pull script.
+# copied to /root/rcraid-artifacts for the host-side pull script.
 set -euxo pipefail
 
 SRC=/home/vagrant/rcraid-dkms
 TOPDIR=/root/rpmbuild
-ART=/tmp/rcraid-artifacts
+ART=/root/rcraid-artifacts
 
 mkdir -p "$ART"
 
@@ -34,12 +34,12 @@ if command -v apt-get >/dev/null 2>&1; then
 
     # reinstall (verify.sh removed it) then detached load test
     apt-get install -y "$DEB"
-    rm -f /tmp/rcraid-smoke.rc
+    rm -f /root/rcraid-smoke.rc
     nohup bash "$SRC/vagrant/verify-load.sh" >/dev/null 2>&1 &
     sleep 45
-    if [ -f /tmp/rcraid-smoke.rc ]; then
-        echo "load test result: $(cat /tmp/rcraid-smoke.rc) (0=ok)"
-        [ "$(cat /tmp/rcraid-smoke.rc)" = "0" ]
+    if [ -f /root/rcraid-smoke.rc ]; then
+        echo "load test result: $(cat /root/rcraid-smoke.rc) (0=ok)"
+        [ "$(cat /root/rcraid-smoke.rc)" = "0" ]
     else
         echo "load test result unknown - NIC probably died; check console screenshot"
     fi
@@ -77,14 +77,14 @@ ls -la "$ART"
 # insert it. The driver's PCI probing may kill the virtio NIC on machines
 # without RAID hardware, so this runs detached and logs to the VM console
 # (readable via `virsh screenshot`); the result code lands in
-# /tmp/rcraid-smoke.rc.
+# /root/rcraid-smoke.rc.
 rpm -Uvh --replacepkgs --replacefiles "$RPM"
-rm -f /tmp/rcraid-smoke.rc
+rm -f /root/rcraid-smoke.rc
 nohup bash "$SRC/vagrant/verify-load.sh" >/dev/null 2>&1 &
 sleep 45
-if [ -f /tmp/rcraid-smoke.rc ]; then
-    echo "load test result: $(cat /tmp/rcraid-smoke.rc) (0=ok)"
-    [ "$(cat /tmp/rcraid-smoke.rc)" = "0" ]
+if [ -f /root/rcraid-smoke.rc ]; then
+    echo "load test result: $(cat /root/rcraid-smoke.rc) (0=ok)"
+    [ "$(cat /root/rcraid-smoke.rc)" = "0" ]
 else
     echo "load test result unknown - NIC probably died; check console screenshot"
 fi
