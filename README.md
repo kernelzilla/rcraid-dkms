@@ -280,6 +280,198 @@ to know that deleting arrays only removes metadata. Partitions are still there, 
 recovered with gdisk, gpart etc. I found out that offset for partitions is 1069056 sectors (512B).
 So if you have partition starting at usual 2048 it will be at 1071104 after array deletion.
 
+Known hardware
+==============
+The mainboards below use the AMD X370, X399, X470 and X570 chipsets that
+carry the Promontory RAID option ROM / RAIDXpert2 firmware this driver
+talks to. Boards based on the refreshed, fanless **X570S** spin of the
+X570 chipset are listed as well and tagged accordingly. Links point to
+the official vendor product pages.
+
+### X370 (Socket AM4)
+
+* ASUS
+  * [ROG CROSSHAIR VI EXTREME](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-vi-extreme-model/)
+  * [ROG CROSSHAIR VI HERO](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-vi-hero-model/)
+  * [ROG CROSSHAIR VI HERO (WI-FI AC)](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-vi-hero-wi-fi-ac-model/)
+  * [ROG STRIX X370-F GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x370-f-gaming-model/)
+  * [ROG STRIX X370-I GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x370-i-gaming-model/)
+  * [PRIME X370-PRO](https://www.asus.com/Motherboards/PRIME-X370-PRO/)
+  * [PRIME X370-A](https://www.asus.com/Motherboards/PRIME-X370-A/)
+* MSI
+  * [X370 XPOWER GAMING TITANIUM](https://www.msi.com/Motherboard/X370-XPOWER-GAMING-TITANIUM)
+  * [X370 GAMING M7 ACK](https://www.msi.com/Motherboard/X370-GAMING-M7-ACK)
+  * [X370 GAMING PRO CARBON](https://www.msi.com/Motherboard/X370-GAMING-PRO-CARBON)
+  * [X370 GAMING PRO CARBON AC](https://www.msi.com/Motherboard/X370-GAMING-PRO-CARBON-AC)
+  * [X370 GAMING PRO](https://www.msi.com/Motherboard/X370-GAMING-PRO)
+  * [X370 GAMING PLUS](https://www.msi.com/Motherboard/X370-GAMING-PLUS)
+  * [X370 KRAIT GAMING](https://www.msi.com/Motherboard/X370-KRAIT-GAMING)
+  * [X370 SLI PLUS](https://www.msi.com/Motherboard/X370-SLI-PLUS)
+* GIGABYTE
+  * [GA-AX370-Gaming K7](https://www.gigabyte.com/Motherboard/GA-AX370-Gaming-K7-rev-10)
+  * [GA-AX370-Gaming K5](https://www.gigabyte.com/Motherboard/GA-AX370-Gaming-K5-rev-1x)
+  * [GA-AX370-Gaming 5](https://www.gigabyte.com/Motherboard/GA-AX370-Gaming-5-rev-10)
+  * [GA-AX370-Gaming K3](https://www.gigabyte.com/Motherboard/GA-AX370-Gaming-K3-rev-10)
+  * [GA-AX370-Gaming 3](https://www.gigabyte.com/Motherboard/GA-AX370-Gaming-3-rev-1x)
+  * [GA-AX370-Gaming](https://www.gigabyte.com/Motherboard/GA-AX370-Gaming-rev-1x)
+  * [GA-AX370M-Gaming 3](https://www.gigabyte.com/Motherboard/GA-AX370M-Gaming-3-rev-1x)
+  * [GA-AX370M-DS3H](https://www.gigabyte.com/Motherboard/GA-AX370M-DS3H-rev-1x)
+* ASRock
+  * [Fatal1ty X370 Professional Gaming](https://www.asrock.com/mb/AMD/Fatal1ty%20X370%20Professional%20Gaming/index.asp)
+  * [X370 Taichi](https://www.asrock.com/mb/AMD/X370%20Taichi/index.asp)
+  * [Fatal1ty X370 Gaming K4](https://www.asrock.com/mb/AMD/Fatal1ty%20X370%20Gaming%20K4/index.asp)
+  * [Fatal1ty X370 Gaming-ITX/ac](https://www.asrock.com/mb/AMD/Fatal1ty%20X370%20Gaming-ITXac/index.asp)
+  * [X370 Killer SLI](https://www.asrock.com/mb/AMD/X370%20Killer%20SLI/index.asp)
+  * [X370 Killer SLI/ac](https://www.asrock.com/mb/AMD/X370%20Killer%20SLIac/index.asp)
+  * [X370 Pro4](https://www.asrock.com/mb/AMD/X370%20Pro4/index.asp)
+* BIOSTAR
+  * [RACING X370GT7](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=874)
+  * [RACING X370GT5](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=873)
+  * [RACING X370GT3](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=871)
+  * [RACING X370GTN](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=879)
+
+### X399 (Socket TR4, Ryzen Threadripper)
+
+* ASUS
+  * [ROG ZENITH EXTREME](https://rog.asus.com/motherboards/rog-zenith/rog-zenith-extreme-model/)
+  * [ROG ZENITH EXTREME ALPHA](https://rog.asus.com/motherboards/rog-zenith/rog-zenith-extreme-alpha-model/)
+  * [ROG STRIX X399-E GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x399-e-gaming-model/)
+  * [PRIME X399-A](https://www.asus.com/Motherboards/PRIME-X399-A/)
+* MSI
+  * [MEG X399 CREATION](https://www.msi.com/Motherboard/MEG-X399-CREATION)
+  * [X399 GAMING PRO CARBON AC](https://www.msi.com/Motherboard/X399-GAMING-PRO-CARBON-AC)
+  * [X399 SLI PLUS](https://www.msi.com/Motherboard/X399-SLI-PLUS)
+* GIGABYTE
+  * [X399 AORUS XTREME](https://www.gigabyte.com/Motherboard/X399-AORUS-XTREME-rev-10)
+  * [X399 AORUS GAMING 7](https://www.gigabyte.com/Motherboard/X399-AORUS-Gaming-7-rev-10)
+  * [X399 AORUS PRO](https://www.gigabyte.com/Motherboard/X399-AORUS-PRO-rev-10)
+  * [X399 DESIGNARE EX](https://www.gigabyte.com/Motherboard/X399-DESIGNARE-EX-rev-10)
+* ASRock
+  * [Fatal1ty X399 Professional Gaming](https://www.asrock.com/mb/AMD/Fatal1ty%20X399%20Professional%20Gaming/index.asp)
+  * [X399 Taichi](https://www.asrock.com/mb/AMD/X399%20Taichi/index.asp)
+  * [X399M Taichi](https://www.asrock.com/mb/AMD/X399M%20Taichi/index.asp)
+  * [X399 Phantom Gaming 6](https://www.asrock.com/mb/AMD/X399%20Phantom%20Gaming%206/index.asp)
+
+### X470 (Socket AM4)
+
+* ASUS
+  * [ROG CROSSHAIR VII HERO](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-vii-hero-model/)
+  * [ROG CROSSHAIR VII HERO (WI-FI)](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-vii-hero-wi-fi-model/)
+  * [ROG STRIX X470-F GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x470-f-gaming-model/)
+  * [ROG STRIX X470-I GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x470-i-gaming-model/)
+  * [PRIME X470-PRO](https://www.asus.com/Motherboards/PRIME-X470-PRO/)
+  * [TUF X470-PLUS GAMING](https://www.asus.com/Motherboards/TUF-X470-PLUS-GAMING/)
+* MSI
+  * [X470 GAMING M7 AC](https://www.msi.com/Motherboard/X470-GAMING-M7-AC)
+  * [X470 GAMING PRO CARBON](https://www.msi.com/Motherboard/X470-GAMING-PRO-CARBON)
+  * [X470 GAMING PRO CARBON AC](https://www.msi.com/Motherboard/X470-GAMING-PRO-CARBON-AC)
+  * [X470 GAMING PRO](https://www.msi.com/Motherboard/X470-GAMING-PRO)
+  * [X470 GAMING PRO MAX](https://www.msi.com/Motherboard/X470-GAMING-PRO-MAX)
+  * [X470 GAMING PLUS](https://www.msi.com/Motherboard/X470-GAMING-PLUS)
+  * [X470 GAMING PLUS MAX](https://www.msi.com/Motherboard/X470-GAMING-PLUS-MAX)
+* GIGABYTE
+  * [X470 AORUS GAMING 7 WIFI](https://www.gigabyte.com/Motherboard/X470-AORUS-GAMING-7-WIFI-rev-10)
+  * [X470 AORUS GAMING 7 WIFI-50](https://www.gigabyte.com/Motherboard/X470-AORUS-GAMING-7-WIFI-50-rev-11)
+  * [X470 AORUS GAMING 5 WIFI](https://www.gigabyte.com/Motherboard/X470-AORUS-GAMING-5-WIFI-rev-10)
+  * [X470 AORUS ULTRA GAMING](https://www.gigabyte.com/Motherboard/X470-AORUS-ULTRA-GAMING-rev-10)
+* ASRock
+  * [X470 Taichi Ultimate](https://www.asrock.com/mb/AMD/X470%20Taichi%20Ultimate/index.asp)
+  * [X470 Taichi](https://www.asrock.com/mb/AMD/X470%20Taichi/index.asp)
+  * [Fatal1ty X470 Gaming K4](https://www.asrock.com/mb/AMD/Fatal1ty%20X470%20Gaming%20K4/index.asp)
+  * [Fatal1ty X470 Gaming-ITX/ac](https://www.asrock.com/mb/AMD/Fatal1ty%20X470%20Gaming-ITXac/index.asp)
+  * [X470 Master SLI](https://www.asrock.com/mb/AMD/X470%20Master%20SLI/index.asp)
+  * [X470 Master SLI/ac](https://www.asrock.com/mb/AMD/X470%20Master%20SLIac/index.asp)
+  * [X470 Pro4](https://www.asrock.com/mb/AMD/X470%20Pro4/index.asp)
+* BIOSTAR
+  * [RACING X470GT8](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=909)
+  * [RACING X470GTN](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=910)
+  * [RACING X470GTA](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=955)
+  * [RACING X470GTQ](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=956)
+  * [X470MH](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=960)
+  * [X470NH](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=962)
+
+### X570 (Socket AM4)
+
+* ASUS
+  * [ROG CROSSHAIR VIII FORMULA](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-viii-formula-model/)
+  * [ROG CROSSHAIR VIII HERO](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-viii-hero-model/)
+  * [ROG CROSSHAIR VIII HERO (WI-FI)](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-viii-hero-wi-fi-model/)
+  * [ROG CROSSHAIR VIII DARK HERO](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-viii-dark-hero-model/)
+  * [ROG CROSSHAIR VIII IMPACT](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-viii-impact-model/)
+  * [ROG CROSSHAIR VIII EXTREME](https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-viii-extreme-model/) *(X570S)*
+  * [ROG STRIX X570-E GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x570-e-gaming-model/)
+  * [ROG STRIX X570-E GAMING WIFI II](https://rog.asus.com/motherboards/rog-strix/rog-strix-x570-e-gaming-wifi-ii-model/) *(X570S)*
+  * [ROG STRIX X570-F GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x570-f-gaming-model/)
+  * [ROG STRIX X570-I GAMING](https://rog.asus.com/motherboards/rog-strix/rog-strix-x570-i-gaming-model/)
+  * [ProArt X570-CREATOR WIFI](https://www.asus.com/motherboards-components/motherboards/proart/proart-x570-creator-wifi/)
+  * [Pro WS X570-ACE](https://www.asus.com/Motherboards/Pro-WS-X570-ACE/)
+  * [PRIME X570-PRO](https://www.asus.com/Motherboards/PRIME-X570-PRO/)
+  * [PRIME X570-P](https://www.asus.com/Motherboards/PRIME-X570-P/)
+  * [TUF GAMING X570-PLUS](https://www.asus.com/Motherboards/TUF-GAMING-X570-PLUS/)
+  * [TUF GAMING X570-PLUS (WI-FI)](https://www.asus.com/Motherboards/TUF-GAMING-X570-PLUS-WI-FI/)
+  * [TUF GAMING X570-PRO (WI-FI)](https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-x570-pro-wi-fi/) *(X570S)*
+* MSI
+  * [MEG X570 GODLIKE](https://www.msi.com/Motherboard/MEG-X570-GODLIKE)
+  * [MEG X570 ACE](https://www.msi.com/Motherboard/MEG-X570-ACE)
+  * [MEG X570 UNIFY](https://www.msi.com/Motherboard/MEG-X570-UNIFY)
+  * [PRESTIGE X570 CREATION](https://www.msi.com/Motherboard/PRESTIGE-X570-CREATION)
+  * [MPG X570 GAMING PRO CARBON WIFI](https://www.msi.com/Motherboard/MPG-X570-GAMING-PRO-CARBON-WIFI)
+  * [MPG X570 GAMING EDGE WIFI](https://www.msi.com/Motherboard/MPG-X570-GAMING-EDGE-WIFI)
+  * [MPG X570 GAMING PLUS](https://www.msi.com/Motherboard/MPG-X570-GAMING-PLUS)
+  * [MAG X570 TOMAHAWK WIFI](https://www.msi.com/Motherboard/MAG-X570-TOMAHAWK-WIFI)
+  * [X570-A PRO](https://www.msi.com/Motherboard/X570-A-PRO)
+  * [MEG X570S ACE MAX](https://www.msi.com/Motherboard/MEG-X570S-ACE-MAX) *(X570S)*
+  * [MEG X570S UNIFY-X MAX](https://www.msi.com/Motherboard/MEG-X570S-UNIFY-X-MAX) *(X570S)*
+  * [MPG X570S CARBON MAX WIFI](https://www.msi.com/Motherboard/MPG-X570S-CARBON-MAX-WIFI) *(X570S)*
+  * [MPG X570S CARBON EK X](https://www.msi.com/Motherboard/MPG-X570S-CARBON-EK-X) *(X570S)*
+  * [MAG X570S TOMAHAWK MAX WIFI](https://www.msi.com/Motherboard/MAG-X570S-TOMAHAWK-MAX-WIFI) *(X570S)*
+  * [MAG X570S TORPEDO MAX](https://www.msi.com/Motherboard/MAG-X570S-TORPEDO-MAX) *(X570S)*
+* GIGABYTE
+  * [X570 AORUS XTREME](https://www.gigabyte.com/Motherboard/X570-AORUS-XTREME-rev-12)
+  * [X570 AORUS MASTER](https://www.gigabyte.com/Motherboard/X570-AORUS-MASTER-rev-11-12)
+  * [X570 AORUS ULTRA](https://www.gigabyte.com/Motherboard/X570-AORUS-ULTRA-rev-11-12)
+  * [X570 AORUS PRO](https://www.gigabyte.com/Motherboard/X570-AORUS-PRO-rev-11-12)
+  * [X570 AORUS PRO WIFI](https://www.gigabyte.com/Motherboard/X570-AORUS-PRO-WIFI-rev-11-12)
+  * [X570 AORUS ELITE](https://www.gigabyte.com/Motherboard/X570-AORUS-ELITE-rev-10)
+  * [X570 AORUS ELITE WIFI](https://www.gigabyte.com/Motherboard/X570-AORUS-ELITE-WIFI-rev-1x)
+  * [X570 I AORUS PRO WIFI](https://www.gigabyte.com/Motherboard/X570-I-AORUS-PRO-WIFI-rev-10)
+  * [X570 GAMING X](https://www.gigabyte.com/Motherboard/X570-GAMING-X-rev-11)
+  * [X570 UD](https://www.gigabyte.com/Motherboard/X570-UD-rev-11)
+  * [X570S AORUS MASTER](https://www.gigabyte.com/Motherboard/X570S-AORUS-MASTER-rev-10) *(X570S)*
+  * [X570S AORUS PRO AX](https://www.gigabyte.com/Motherboard/X570S-AORUS-PRO-AX-rev-11) *(X570S)*
+  * [X570S AORUS ELITE AX](https://www.gigabyte.com/Motherboard/X570S-AORUS-ELITE-AX-rev-10) *(X570S)*
+  * [X570S AORUS ELITE](https://www.gigabyte.com/Motherboard/X570S-AORUS-ELITE-rev-10) *(X570S)*
+  * [X570SI AORUS PRO AX](https://www.gigabyte.com/Motherboard/X570SI-AORUS-PRO-AX-rev-11) *(X570S)*
+  * [X570S AERO G](https://www.gigabyte.com/Motherboard/X570S-AERO-G-rev-10) *(X570S)*
+  * [X570S GAMING X](https://www.gigabyte.com/Motherboard/X570S-GAMING-X-rev-10) *(X570S)*
+  * [X570S UD](https://www.gigabyte.com/Motherboard/X570S-UD-rev-10) *(X570S)*
+* ASRock
+  * [X570 AQUA](https://www.asrock.com/mb/AMD/X570%20AQUA/index.asp)
+  * [X570 Creator](https://www.asrock.com/mb/AMD/X570%20Creator/index.asp)
+  * [X570 Taichi](https://www.asrock.com/mb/AMD/X570%20Taichi/index.asp)
+  * [X570 Taichi Razer Edition](https://www.asrock.com/mb/AMD/X570%20Taichi%20Razer%20Edition/index.asp)
+  * [X570 Phantom Gaming X](https://www.asrock.com/mb/AMD/X570%20Phantom%20Gaming%20X/index.asp)
+  * [X570 PG Velocita](https://www.asrock.com/mb/AMD/X570%20PG%20Velocita/index.asp)
+  * [X570 Phantom Gaming-ITX/TB3](https://www.asrock.com/mb/AMD/X570%20Phantom%20Gaming-ITXTB3/index.asp)
+  * [X570 Phantom Gaming 4](https://www.asrock.com/mb/AMD/X570%20Phantom%20Gaming%204/index.asp)
+  * [X570 Phantom Gaming 4 WiFi ax](https://www.asrock.com/mb/AMD/X570%20Phantom%20Gaming%204%20WiFi%20ax/index.asp)
+  * [X570 Phantom Gaming 4S](https://www.asrock.com/mb/AMD/X570%20Phantom%20Gaming%204S/index.asp)
+  * [X570 Extreme4](https://www.asrock.com/mb/AMD/X570%20Extreme4/index.asp)
+  * [X570 Extreme4 WiFi ax](https://www.asrock.com/mb/AMD/X570%20Extreme4%20WiFi%20ax/index.asp)
+  * [X570 Steel Legend](https://www.asrock.com/mb/AMD/X570%20Steel%20Legend/index.asp)
+  * [X570 Steel Legend WiFi ax](https://www.asrock.com/mb/AMD/X570%20Steel%20Legend%20WiFi%20ax/index.asp)
+  * [X570 Pro4](https://www.asrock.com/mb/AMD/X570%20Pro4/index.asp)
+  * [X570M Pro4](https://www.asrock.com/mb/AMD/X570M%20Pro4/index.asp)
+  * [X570S PG Riptide](https://www.asrock.com/mb/AMD/X570S%20PG%20Riptide/index.asp) *(X570S)*
+* EVGA
+  * [X570 DARK](https://www.evga.com/products/product.aspx?pn=121-VR-A579-KR) *(X570S)*
+* BIOSTAR
+  * [RACING X570GT8](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=952)
+  * [RACING X570GTA](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=963)
+  * [RACING X570GT](https://www.biostar.com.tw/app/en/mb/introduction.php?S_ID=957)
+* Colorful
+  * [CVN X570 GAMING PRO V14](https://www.colorful.cn/home/product?id=787&mid=84)
+
 Special Thanks
 ==============
 This repository is a fork of https://github.com/thopiekar/rcraid-dkms
