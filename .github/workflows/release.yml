@@ -61,15 +61,19 @@ jobs:
 
       - name: Ensure KVM and the vagrantnet libvirt network
         run: |
-          sudo modprobe kvm-intel 2>/dev/null || sudo modprobe kvm-amd 2>/dev/null || true
-          sudo chmod 666 /dev/kvm 2>/dev/null || true
-          sudo systemctl start libvirtd 2>/dev/null || true
+          # Every command is `timeout`-capped and sudo runs -n so that
+          # neither a missing passwordless-sudo rule nor a wedged
+          # libvirtd can stall the step until the 90m job timeout.
+          timeout 30 sudo -n modprobe kvm-intel 2>/dev/null \
+            || timeout 30 sudo -n modprobe kvm-amd 2>/dev/null || true
+          timeout 30 sudo -n chmod 666 /dev/kvm 2>/dev/null || true
+          timeout 30 sudo -n systemctl start libvirtd 2>/dev/null || true
           # vagrantnet is a DHCP-only network (DNS disabled) so it does
           # not collide with a resolver bound to host port 53.
-          virsh -c qemu:///system net-info vagrantnet >/dev/null 2>&1 || {
-            virsh -c qemu:///system net-define vagrant/vagrantnet.xml
-            virsh -c qemu:///system net-start vagrantnet
-            virsh -c qemu:///system net-autostart vagrantnet
+          timeout 30 virsh -c qemu:///system net-info vagrantnet >/dev/null 2>&1 || {
+            timeout 30 virsh -c qemu:///system net-define vagrant/vagrantnet.xml
+            timeout 30 virsh -c qemu:///system net-start vagrantnet
+            timeout 30 virsh -c qemu:///system net-autostart vagrantnet
           }
 
       - name: Install vagrant plugins
@@ -81,13 +85,13 @@ jobs:
         run: |
           sg libvirt -c "vagrant destroy -f rcraid-${{ matrix.distro }}" || true
           dom="rcraid-ci_rcraid-${{ matrix.distro }}"
-          if virsh -c qemu:///system list --all --name | grep -qx "$dom"; then
-            virsh -c qemu:///system destroy "$dom" || true
-            virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
-              || virsh -c qemu:///system undefine "$dom" || true
+          if timeout 30 virsh -c qemu:///system list --all --name | grep -qx "$dom"; then
+            timeout 30 virsh -c qemu:///system destroy "$dom" || true
+            timeout 30 virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
+              || timeout 30 virsh -c qemu:///system undefine "$dom" || true
           fi
           # orphaned qcow2 volume from a partially-created/undefined domain
-          virsh -c qemu:///system vol-delete --pool default "$dom.img" 2>/dev/null || true
+          timeout 30 virsh -c qemu:///system vol-delete --pool default "$dom.img" 2>/dev/null || true
 
       - name: Build and test in rcraid-${{ matrix.distro }}
         run: sg libvirt -c "vagrant up rcraid-${{ matrix.distro }} --provider=libvirt" || true
@@ -135,10 +139,10 @@ jobs:
         run: |
           sg libvirt -c "vagrant destroy -f rcraid-${{ matrix.distro }}" || true
           dom="rcraid-ci_rcraid-${{ matrix.distro }}"
-          virsh -c qemu:///system destroy "$dom" || true
-          virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
-            || virsh -c qemu:///system undefine "$dom" || true
-          virsh -c qemu:///system vol-delete --pool default "$dom.img" 2>/dev/null || true
+          timeout 30 virsh -c qemu:///system destroy "$dom" || true
+          timeout 30 virsh -c qemu:///system undefine --nvram "$dom" 2>/dev/null \
+            || timeout 30 virsh -c qemu:///system undefine "$dom" || true
+          timeout 30 virsh -c qemu:///system vol-delete --pool default "$dom.img" 2>/dev/null || true
 
   # -------------------------------------------------------------------
   # .deb for Debian/Ubuntu
