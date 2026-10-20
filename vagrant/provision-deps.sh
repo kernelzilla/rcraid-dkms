@@ -46,20 +46,40 @@ elif command -v apt-get >/dev/null 2>&1; then
     elif [ "${VANILLA_KERNEL:-}" = "1" ]; then
         # ToeiRei/kernel-deb packagecloud repo: prebuilt vanilla kernel debs
         # (linux-image|linux-headers-<kver>-toeirei). Kernels are unsigned.
-        curl -fsSL "https://packagecloud.io/install/repositories/debian-kernels/buster/script.deb.sh" | bash
+        # The repo only publishes Debian dists and every dist serves the
+        # same package pool, so always pin os=debian dist=bookworm: an
+        # auto-detected "ubuntu noble" (or numeric "13" on trixie) 404s
+        # apt-get update and kills the whole provisioner.
+        curl -fsSL "https://packagecloud.io/install/repositories/debian-kernels/buster/script.deb.sh" \
+            | env os=debian dist=bookworm bash
         apt-get update
+        # Resolve a kernel.org release to the newest -toeirei build the
+        # repo actually carries for that series; upstream point releases
+        # routinely land in the repo days late (or never, for old series).
+        toeirei_resolve() {
+            apt-cache pkgnames "linux-image-${1%.*}." \
+                | sed -nE "s/^linux-image-(${1%.*}\.[0-9]+)-toeirei\$/\1/p" \
+                | sort -V | tail -1
+        }
         # VANILLA_KVERS=auto -> latest release per stable+longterm series
         KVERS_LIST="${VANILLA_KVERS:-auto}"
         if [ "$KVERS_LIST" = "auto" ]; then
             KVERS_LIST="$(bash /home/vagrant/rcraid-dkms/vagrant/kernel-versions.sh 2>/dev/null || echo "$VANILLA_KVER")"
         fi
         echo ">> installing headers for kernel series: $KVERS_LIST"
-        for v in $KVERS_LIST; do
-            apt-get install -y "linux-headers-${v}-toeirei" \
-                || echo "WARNING: no headers package for $v" >&2
+        for series in $KVERS_LIST; do
+            v="$(toeirei_resolve "$series")"
+            if [ -n "$v" ]; then
+                apt-get install -y "linux-headers-${v}-toeirei" \
+                    || echo "WARNING: headers install failed for $v" >&2
+            else
+                echo "WARNING: no toeirei build for series $series" >&2
+            fi
         done
-        apt-get install -y "linux-image-${VANILLA_KVER}-toeirei" \
-                           "linux-headers-${VANILLA_KVER}-toeirei"
+        v="$(toeirei_resolve "$VANILLA_KVER")"
+        apt-get install -y "linux-image-${v:-$VANILLA_KVER}-toeirei" \
+                           "linux-headers-${v:-$VANILLA_KVER}-toeirei" \
+            || echo "WARNING: no toeirei image for $VANILLA_KVER; VM keeps the stock kernel" >&2
     else
         apt-get -y dist-upgrade
         apt-get install -y linux-headers-generic \
