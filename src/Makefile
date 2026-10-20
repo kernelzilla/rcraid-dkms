@@ -210,6 +210,12 @@ ibanner:
 
 obj-m := rcraid.o
 
+# objtool cannot validate the prebuilt rcblob object, and the prebuilt
+# objtool shipped in some header packages (e.g. ToeiRei vanilla debs)
+# may be linked against a newer glibc than the host has. Skipping it
+# also avoids "GLIBC_2.xx not found" failures on older userlands.
+OBJECT_FILES_NON_STANDARD := y
+
 rcraid-objs := rc_init.o rc_msg.o rc_mem_ops.o rc_event.o rc_config.o rcblob.$(PLATFORM).o \
 	       vers.o
 

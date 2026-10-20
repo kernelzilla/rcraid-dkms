@@ -80,6 +80,34 @@ elif command -v apt-get >/dev/null 2>&1; then
         apt-get install -y "linux-image-${v:-$VANILLA_KVER}-toeirei" \
                            "linux-headers-${v:-$VANILLA_KVER}-toeirei" \
             || echo "WARNING: no toeirei image for $VANILLA_KVER; VM keeps the stock kernel" >&2
+        # toeirei headers record CFLAGS from the gcc that built the
+        # kernel (currently Debian gcc-14); distro compilers can't parse
+        # some of them (e.g. -ftrivial-auto-var-init, -fmin-function-
+        # alignment on Ubuntu's gcc-11/13). Scrub the unsupported flags:
+        # they are hardening/alignment knobs, not ABI.
+        for mk in /usr/src/linux-headers-*-toeirei/Makefile; do
+            [ -e "$mk" ] || continue
+            sed -i -e 's/-ftrivial-auto-var-init=[a-z]*//g' \
+                   -e 's/-fmin-function-alignment=[^ ]*//g' "$mk"
+        done
+        # The prebuilt kbuild host tools in the headers are linked
+        # against a newer glibc than Ubuntu carries. Rebuild modpost
+        # from its shipped sources with the local gcc (it is a required
+        # build step); every other broken tool (objtool, resolve_btfids,
+        # ...) is either optional or never runs for module builds, so
+        # no-op it with an exit-0 script.
+        for d in /usr/src/linux-headers-*-toeirei; do
+            [ -d "$d" ] || continue
+            find "$d" -type f -executable | while read -r t; do
+                ldd "$t" 2>/dev/null | grep -q 'not found' || continue
+                if [ "$t" = "$d/scripts/mod/modpost" ]; then
+                    mpsrcs="$(ls "$d"/scripts/mod/{modpost,file2alias,sumversion,symsearch}.c 2>/dev/null)"
+                    gcc -o "$t" $mpsrcs -I"$d"/scripts/include -I"$d" || rm -f "$t"
+                else
+                    printf '#!/bin/sh\nexit 0\n' > "$t"; chmod +x "$t"
+                fi
+            done
+        done
     else
         apt-get -y dist-upgrade
         apt-get install -y linux-headers-generic \
